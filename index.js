@@ -17,9 +17,6 @@ mongoose.connect(process.env.MONGO_URI, {
   .catch((err) => console.error(" MongoDB Connection Error:", err));
 
    
-  app.get('/', (req, res) => {
-    res.send('Hello, World!');
-  });
   
   app.use(require("./routes/signup")); 
 
