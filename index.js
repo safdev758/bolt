@@ -31,10 +31,10 @@ app.post('/upload-message', upload.single('file'), (req, res) => {
 const signupRoutes = require("./routes/signup");
 const loginRoutes = require("./routes/login");
 const resetRoutes = require("./routes/reset");
-const videocallingRoutes = require("./routes/videocalling");
+const videocallingRoutes = require("./routes/videocalling"); // Import correctly
 const fyp = require("./routes/fyp");
 
-videocallingRoutes(server);
+videocallingRoutes(server); // Call the function here
 app.use(signupRoutes);
 app.use(loginRoutes);
 app.use(fyp);
@@ -42,11 +42,10 @@ app.use("/auth", resetRoutes);
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
 })
   .then(() => {
     console.log("✅ MongoDB Connected");
-    require('./websocket').initSocket(server);
     server.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT}`);
     });

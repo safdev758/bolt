@@ -10,7 +10,6 @@ const motherSchema = new mongoose.Schema({
     phone_number: {
       type: String,
       required: true,
-      
       trim: true,
     },
     email:{

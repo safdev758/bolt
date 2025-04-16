@@ -94,4 +94,6 @@ function initSocket(server) {
   return io;
 }
 
-module.exports = { initSocket };
+module.exports = function(server) {
+  initSocket(server);
+};
