@@ -35,8 +35,17 @@ const motherSchema = new mongoose.Schema({
       type: String,
       default: "",
     },
+    preferred_age_groups: {
+      type: [String],
+      default: []
+    },
+    pref_location: {
+      type: String,
+      default: ""
+    },
+    saved_babysitters: {
+      type: [String],
+      default: []
+    },
   }, { timestamps: true });
-  
-  
-  
   module.exports = mongoose.model("Mother", motherSchema);
