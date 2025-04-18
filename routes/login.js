@@ -25,7 +25,14 @@ router.post('/login/babysitter', async (req, res) => {
         babysitter.refreshToken = refreshToken;
         await babysitter.save();
 
-        res.json({ accessToken, refreshToken });
+        res.json({
+          accessToken,
+          refreshToken,
+          profilePicture: babysitter.profilePicture
+            ? `http://localhost:4000/${babysitter.profilePicture}`
+            : null
+        });
+        
     } catch (error) {
         res.status(500).send('Error logging in user.');
         console.log(error);
@@ -56,7 +63,13 @@ router.post('/login/mother', async (req, res) => {
       mother.refreshToken = refreshToken;
       await mother.save();
   
-      res.json({ accessToken, refreshToken });
+      res.json({
+        accessToken,
+        refreshToken,
+        profilePicture: mother.profilePicture
+          ? `http://localhost:4000/${mother.profilePicture}`
+          : null
+      });      
     } catch (error) {
       res.status(500).send('Error logging in');
       console.error(error);
