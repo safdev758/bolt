@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 4000;
 const server = http.createServer(app);
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -31,12 +32,16 @@ app.post('/upload-message', upload.single('file'), (req, res) => {
 const signupRoutes = require("./routes/signup");
 const loginRoutes = require("./routes/login");
 const resetRoutes = require("./routes/reset");
-const videocallingRoutes = require("./routes/videocalling"); // Import correctly
+const videocallingRoutes = require("./routes/videocalling");
+const deleteRoute = require('./routes/delete') // Import correctly
 const fyp = require("./routes/fyp");
+const deleteOtpRoute = require('./routes/deleteotp'); // Import the delete OTP route
 
 videocallingRoutes(server); // Call the function here
+app.use(deleteOtpRoute);
 app.use(signupRoutes);
 app.use(loginRoutes);
+app.use(deleteRoute); // Use the delete route
 app.use(fyp);
 app.use("/auth", resetRoutes);
 
