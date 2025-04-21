@@ -36,8 +36,9 @@ const videocallingRoutes = require("./routes/videocalling");
 const deleteRoute = require('./routes/delete') // Import correctly
 const fyp = require("./routes/fyp");
 const deleteOtpRoute = require('./routes/deleteotp'); // Import the delete OTP route
-
+const ratingRoutes = require("./routes/rating");
 videocallingRoutes(server); // Call the function here
+app.use(ratingRoutes); // Use the rating routes
 app.use(deleteOtpRoute);
 app.use(signupRoutes);
 app.use(loginRoutes);
