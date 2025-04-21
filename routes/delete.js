@@ -1,0 +1,32 @@
+router.delete('/delete-account', async (req, res) => {
+    const authHeader = req.headers.authorization;
+  
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Authorization token required' });
+    }
+  
+    const token = authHeader.split(' ')[1];
+  
+    try {
+      const decoded = jwt.verify(token, process.env.SECRET_KEY);
+  
+      // Try to find the user in either collection
+      let user = await Mother.findById(decoded.userId);
+      if (!user) {
+        user = await Babysitter.findById(decoded.userId);
+      }
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Delete the user
+      await user.deleteOne();
+      
+      res.json({ message: 'Account deleted successfully' });
+    } catch (err) {
+      console.error(err);
+      res.status(401).json({ message: 'Invalid or expired token' });
+    }
+  });
+  module.exports = router;

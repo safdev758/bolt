@@ -38,4 +38,4 @@ router.post('/change-password', async (req, res) => {
     res.status(401).json({ message: 'Invalid or expired token' });
   }
 });
-exports = router;
+module.exports = router;
