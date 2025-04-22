@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const upload = require('./middlewares/upload-message');
+const router = express.Router();
 require('dotenv').config();
 
 const app = express();
