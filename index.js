@@ -28,7 +28,6 @@ app.post('/upload-message', upload.single('file'), (req, res) => {
     filePath: `/uploads/${req.file.filename}`,
   });
 });
-
 const signupRoutes = require("./routes/signup");
 const loginRoutes = require("./routes/login");
 const resetRoutes = require("./routes/reset");
@@ -37,7 +36,9 @@ const deleteRoute = require('./routes/delete') // Import correctly
 const fyp = require("./routes/fyp");
 const deleteOtpRoute = require('./routes/deleteotp'); // Import the delete OTP route
 const ratingRoutes = require("./routes/rating");
+const changepass = require("./routes/changepassword");
 videocallingRoutes(server); // Call the function here
+app.use(changepass); // Use the change password route
 app.use(ratingRoutes); // Use the rating routes
 app.use(deleteOtpRoute);
 app.use(signupRoutes);

@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Mother = require('../models/mother');
 const Babysitter = require('../models/babysitter');
-
+const router = require('express').Router();
 router.post('/change-password', async (req, res) => {
   const authHeader = req.headers.authorization;
   const { currentPassword, newPassword } = req.body;

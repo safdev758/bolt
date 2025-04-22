@@ -24,12 +24,11 @@ router.post('/login/babysitter', async (req, res) => {
 
         babysitter.refreshToken = refreshToken;
         await babysitter.save();
-
         res.json({
           accessToken,
           refreshToken,
-          profilePicture: babysitter.profilePicture
-            ? `http://localhost:4000/${babysitter.profilePicture}`
+          profilePicture:  babysitter.profilePhoto
+            ? `http://localhost:4000/${babysitter.profilePhoto}`
             : null
         });
         
