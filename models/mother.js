@@ -46,5 +46,9 @@ const motherSchema = new mongoose.Schema({
       type: [String],
       default: []
     },
+    bio: {
+  type: String,
+  default: ""
+},
   }, { timestamps: true });
   module.exports = mongoose.model("Mother", motherSchema);
