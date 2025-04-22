@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const babysitterSchema = new mongoose.Schema({
   fullname: {
     type: String,
@@ -14,13 +15,12 @@ const babysitterSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  email:{
-    type:String,
-    required:true,
-    unique:true,
-    trim:true
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
   },
-  
   pref_location: {
     type: String,
     required: true,
@@ -45,42 +45,47 @@ const babysitterSchema = new mongoose.Schema({
     type: String, 
   },
   resetCode: { 
-    type: Number },
-    resetCodeExpires: {
-      type: Date, 
+    type: Number
+  },
+  resetCodeExpires: {
+    type: Date, 
+  },
+  ratings: [{
+    motherId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Mother',
+      required: true
     },
-    ratings: [{
-      motherId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Mother',
-        required: true
-      },
-      rating: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 5
-      },
-      comment: {
-        type: String
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now
-      }
-    }],
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5
+    },
+    comment: {
+      type: String
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   bio: {
-  type: String,
-  default: ""
-},
-  
+    type: String,
+    default: ""
+  },
+  acceptedRequests: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'BabysittingRequest'
+  }],
   refreshToken: {
     type: String, 
     default: "",
   },
+  available: { 
+    type: Boolean,
+    default: true  // true means the babysitter is generally available
+  },
 }, { timestamps: true });
-
-
-
 
 module.exports = mongoose.model("Babysitter", babysitterSchema);
