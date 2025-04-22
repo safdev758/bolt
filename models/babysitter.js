@@ -73,6 +73,11 @@ const babysitterSchema = new mongoose.Schema({
   type: String,
   default: ""
 },
+  available: {
+  type: Boolean,
+  default: true,
+},
+
   
   refreshToken: {
     type: String, 
