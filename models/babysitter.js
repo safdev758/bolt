@@ -69,6 +69,10 @@ const babysitterSchema = new mongoose.Schema({
         default: Date.now
       }
     }],
+  bio: {
+  type: String,
+  default: ""
+},
   
   refreshToken: {
     type: String, 
