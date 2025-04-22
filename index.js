@@ -38,6 +38,9 @@ const fyp = require("./routes/fyp");
 const deleteOtpRoute = require('./routes/deleteotp'); // Import the delete OTP route
 const ratingRoutes = require("./routes/rating");
 const changepass = require("./routes/changepassword");
+const availableRoute = require('./routes/available');
+const updateProfileRoute = require('./routes/updateprofile');
+
 videocallingRoutes(server); // Call the function here
 app.use(changepass); // Use the change password route
 app.use(ratingRoutes); // Use the rating routes
@@ -46,12 +49,12 @@ app.use(signupRoutes);
 app.use(loginRoutes);
 app.use(deleteRoute); // Use the delete route
 app.use(fyp);
+app.use( availableRoute);
+app.use( updateProfileRoute);
+
 app.use("/auth", resetRoutes);
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB Connected");
     server.listen(PORT, () => {
