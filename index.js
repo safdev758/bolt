@@ -5,13 +5,13 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const upload = require('./middlewares/upload-message');
-const router = express.Router();
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 const server = http.createServer(app);
-
+const cors = require('cors');
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -29,6 +29,8 @@ app.post('/upload-message', upload.single('file'), (req, res) => {
     filePath: `/uploads/${req.file.filename}`,
   });
 });
+const addofflinebaby=require('./routes/offlinebaby');
+app.use(addofflinebaby)
 const signupRoutes = require("./routes/signup");
 const loginRoutes = require("./routes/login");
 const resetRoutes = require("./routes/reset");
@@ -45,19 +47,24 @@ const refrequestRoutes = require("./routes/refreq");
 const getreqRoutes = require("./routes/getreq");
 const sendreqRoutes = require("./routes/sendreq");
 const getacceptedRoutes = require("./routes/acceptedreq");
-const getallRoutes = require("./routes/getreq");
+const motherContactRoutes = require("./routes/motherContacts");
+const babysitterContactRoutes = require("./routes/babysitterContacts");
+const searchbyname =require("./routes/serachbyname");
+app.use(searchbyname)
+app.use(babysitterContactRoutes)
+app.use(motherContactRoutes)
 app.use(notificationRoutes); // Use the notification routes
 app.use(refrequestRoutes); // Use the referral request routes 
 app.use(getreqRoutes); // Use the get request routes  
 app.use(sendreqRoutes); // Use the send request routes
 app.use(getacceptedRoutes); // Use the get accepted request routes
-app.use(getallRoutes); // Use the get all request routes
 videocallingRoutes(server); // Call the function here
 app.use(changepass); // Use the change password route
 app.use(ratingRoutes); // Use the rating routes
 app.use(deleteOtpRoute);
 app.use(signupRoutes);
 app.use(loginRoutes);
+app.use('/uploads', express.static(path.join(__dirname,'uploads')));
 app.use(deleteRoute); // Use the delete route
 app.use(fyp);
 app.use(availableRoute);

@@ -53,8 +53,20 @@ function initSocket(server) {
       });
     });
 
-    socket.on('send-message', ({ to, type, content }) => {
-      const allowedTypes = ['text', 'image', 'voice'];
+    socket.on('send-message', async ({ to, type, content }) => {
+      const allowedTypes = ['text', 'image'];
+      const Mother = require('./models/mother');
+      const Babysitter = require('./models/babysitter');
+
+      async function addContact(userId, contactId) {
+  
+      await Promise.all([
+       Mother.findByIdAndUpdate(userId, { $addToSet: { contacts: contactId } }),
+       Babysitter.findByIdAndUpdate(userId, { $addToSet: { contacts: contactId } }),
+       Mother.findByIdAndUpdate(contactId, { $addToSet: { contacts: userId } }),
+       Babysitter.findByIdAndUpdate(contactId, { $addToSet: { contacts: userId } })
+  ]);
+}
       if (!allowedTypes.includes(type)) {
         return socket.emit('error', { message: 'Invalid message type' });
       }
@@ -64,6 +76,11 @@ function initSocket(server) {
         content,
         timestamp: new Date(),
       });
+      try {
+        await addContact(socket.user.id, to);
+      } catch (err) {
+        console.error("Error adding to contacts:", err);
+      }
     });
 
     socket.on('send-file', (data) => {

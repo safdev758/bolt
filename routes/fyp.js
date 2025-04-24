@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const Mother = require('../models/mother');
 const Babysitter = require('../models/babysitter');
 require('dotenv').config();
+
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -26,6 +27,7 @@ router.get('/recommended-babysitters', authenticateToken, async (req, res) => {
     const babysitters = await Babysitter.find({
       pref_location: location,
       age_grps: { $in: preferredAgeGroups },
+      available: true
     }).lean();
 
     const babysittersWithRatings = babysitters.map(babysitter => {
@@ -33,6 +35,7 @@ router.get('/recommended-babysitters', authenticateToken, async (req, res) => {
       const avgRating = ratings.length > 0 ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length : 0;
       return { ...babysitter, avgRating };
     });
+
     babysittersWithRatings.sort((a, b) => b.avgRating - a.avgRating);
     res.json(babysittersWithRatings);
   } catch (error) {
@@ -42,14 +45,19 @@ router.get('/recommended-babysitters', authenticateToken, async (req, res) => {
 });
 router.get('/saved-babysitters', authenticateToken, async (req, res) => {
   try {
-    const motherData = await Mother.findById(req.mother.id).populate('saved_babysitters').lean();
+    const motherData = await Mother.findById(req.mother.id).populate({
+      path: 'saved_babysitters',
+      match: { available: true }
+    }).lean();
+
     if (!motherData) return res.status(404).json({ message: 'Mother not found' });
 
-    const savedBabysitters = motherData.saved_babysitters.map(babysitter => {
+    const savedBabysitters = (motherData.saved_babysitters || []).map(babysitter => {
       const ratings = babysitter.ratings || [];
       const avgRating = ratings.length > 0 ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length : 0;
       return { ...babysitter, avgRating };
     });
+
     savedBabysitters.sort((a, b) => b.avgRating - a.avgRating);
     res.json(savedBabysitters);
   } catch (error) {

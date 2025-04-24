@@ -82,10 +82,15 @@ const babysitterSchema = new mongoose.Schema({
     type: String, 
     default: "",
   },
+  
   available: { 
     type: Boolean,
     default: true  // true means the babysitter is generally available
-  },
+  },contacts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'mothers'  // This points to the Mother model
+  }]
+  
 }, { timestamps: true });
 
 module.exports = mongoose.model("Babysitter", babysitterSchema);

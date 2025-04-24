@@ -44,11 +44,16 @@ const motherSchema = new mongoose.Schema({
     },
     saved_babysitters: {
       type: [String],
-      default: []
+      ref: 'babysitters'
     },
+    contacts: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'babysitters'
+    }]
+,    
     bio: {
   type: String,
-  default: ""
+  default: "",
 },
   }, { timestamps: true });
   module.exports = mongoose.model("Mother", motherSchema);
