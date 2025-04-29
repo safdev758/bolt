@@ -6,10 +6,10 @@ const requestSchema = new mongoose.Schema({
     name: { type: String, required: true },
     age: { type: Number, required: true },
     babysittingDate: {
-      month: { type: Number, required: true },
-      day: { type: Number, required: true },
+      date: { type: String, required: true },
       time: { type: String, required: true }
-    }
+    },
+    message: { type: String, required: true } ,
   },
   status: {
     type: String,

@@ -95,8 +95,6 @@ router.post('/forgot-password', async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
-
-// Reset Password - Verify Code and Change Password
 router.post('/reset-password', async (req, res) => {
     const { email, confirmationCode, newPassword } = req.body;
     try {

@@ -6,7 +6,6 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const upload = require('./middlewares/upload-message');
 require('dotenv').config();
-
 const app = express();
 const PORT = process.env.PORT || 4000;
 const server = http.createServer(app);
@@ -46,10 +45,14 @@ const notificationRoutes = require("./routes/notification");
 const refrequestRoutes = require("./routes/refreq");
 const getreqRoutes = require("./routes/getreq");
 const sendreqRoutes = require("./routes/sendreq");
-const getacceptedRoutes = require("./routes/acceptedreq");
+const acceptRoutes = require("./routes/acceptedreq");
 const motherContactRoutes = require("./routes/motherContacts");
 const babysitterContactRoutes = require("./routes/babysitterContacts");
 const searchbyname =require("./routes/serachbyname");
+const support_contact = require("./routes/support")
+const getacceptedreq=require("./routes/getacceptedreq")
+app.use(support_contact)
+app.use(getacceptedreq)
 app.use(searchbyname)
 app.use(babysitterContactRoutes)
 app.use(motherContactRoutes)
@@ -57,7 +60,7 @@ app.use(notificationRoutes); // Use the notification routes
 app.use(refrequestRoutes); // Use the referral request routes 
 app.use(getreqRoutes); // Use the get request routes  
 app.use(sendreqRoutes); // Use the send request routes
-app.use(getacceptedRoutes); // Use the get accepted request routes
+app.use(acceptRoutes); // Use the get accepted request routes
 videocallingRoutes(server); // Call the function here
 app.use(changepass); // Use the change password route
 app.use(ratingRoutes); // Use the rating routes
@@ -69,9 +72,7 @@ app.use(deleteRoute); // Use the delete route
 app.use(fyp);
 app.use(availableRoute);
 app.use(updateProfileRoute);
-
 app.use("/auth", resetRoutes);
-
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB Connected");

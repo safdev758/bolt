@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
 
 const motherSchema = new mongoose.Schema({
     fullname: {
@@ -14,12 +13,16 @@ const motherSchema = new mongoose.Schema({
     },
     email:{
       type:String,
-      require:true,
+      required:true,
       unique:true,
     },
     password: {
       type: String,
       required: true,
+    },
+    favorite_babysitters: {
+      type: [String],
+      ref: 'babysitters'
     },
     profilePhoto:{
       type:String,
@@ -46,6 +49,7 @@ const motherSchema = new mongoose.Schema({
       type: [String],
       ref: 'babysitters'
     },
+    
     contacts: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'babysitters'

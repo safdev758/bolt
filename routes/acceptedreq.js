@@ -3,7 +3,6 @@ const router = express.Router();
 const auth = require('../middlewares/auth');
 router.post('/requests/:requestId/accept', auth, async (req, res) => {
     const { requestId } = req.params;
-  
     const request = await BabysittingRequest.findById(requestId)
       .populate('mother')
       .populate('babysitter');

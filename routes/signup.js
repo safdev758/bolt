@@ -9,76 +9,66 @@ const upload = require('../middlewares/upload');
 const { default: mongoose } = require('mongoose');
 const nodemailer = require('nodemailer');
 
-// Configure your transporter (update with your SMTP settings)
+// ✅ Configure nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL, // your email address
-    pass: process.env.EMAIL_PASS  // your email password or app-specific password
-  }
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
-// Helper function to send OTP email
+// ✅ Helper function to send structured JSON response
+function sendResponse(res, statusCode, message, access = '', refresh = '', profilePicture = null) {
+  res.status(statusCode).json({ message, access, refresh, profilePicture });
+}
+
+// ✅ Helper function to send OTP Email
 async function sendOTPEmail(email) {
   const mailOptions = {
     from: process.env.EMAIL_ADDRESS,
     to: email,
-    subject: 'Your OTP Code',
-    html : ` <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
-        <h2 style="color: #4A90E2;">Hi there 👋</h2>
-        <p>We're thrilled to welcome you to <strong>TOTRUST</strong>.</p>
-        <p>You’ve just registered with this email: <strong>${email}</strong>.</p>
-        <p><strong>If this wasn’t you</strong>, don’t worry — you can let us know and delete this account using the link below:</p>
-        <p style="margin-top: 16px;">
-          <a href="http://localhost:4000/delete?email=${encodeURIComponent(email)}" style="background-color: #E74C3C; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">
-            Delete My Account
-          </a>
-        </p>
-        <p style="margin-top: 20px;">If it *was* you — welcome aboard! You’re now part of a safe and caring community ❤️</p>
-        <p style="font-size: 12px; color: #999; margin-top: 30px;">This is an automated email. Please do not reply directly.</p>
-      </div> `
+    subject: 'Welcome to TotTrust!',
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+        <h2>Hi there 👋</h2>
+        <p>Thanks for joining <strong>TotTrust</strong>!</p>
+        <p>You registered with email: <strong>${email}</strong>.</p>
+        <p>If this wasn't you, you can delete your account here:</p>
+        <a href="http://localhost:4000/delete?email=${encodeURIComponent(email)}" 
+           style="background-color: #e74c3c; padding: 10px 15px; color: white; text-decoration: none; border-radius: 5px;">
+           Delete My Account
+        </a>
+        <p style="margin-top:20px;">Otherwise, welcome aboard! ❤️</p>
+      </div>
+    `
   };
-  return transporter.sendMail(mailOptions);
+  await transporter.sendMail(mailOptions);
 }
 
-// Babysitter Registration
+// ✅ Babysitter Registration
 router.post('/register_babysitter', upload.single('profilePhoto'), async (req, res) => {
-  const { 
-    fullname, 
-    phone_number, 
-    agest, 
-    email, 
-    pref_location, 
-    expst, 
-    age_grps, 
-    password, 
-    confirmPassword, 
-    national_card_number 
-  } = req.body;
-
-  if (!password || !confirmPassword || password.trim() !== confirmPassword.trim()) {
-    return res.status(400).json({ message: "Passwords don't match" });
-  }
-
-  const parsedExp = parseInt(expst, 10);
-  const parsedAge = parseInt(agest, 10);
-  if (isNaN(parsedExp) || isNaN(parsedAge)) {
-    return res.status(400).json({ message: 'Invalid number for exp or age' });
-  }
-
   try {
+    const { fullname, phone_number, age, email, pref_location, exp, age_grps, password, confirmPassword, national_card_number } = req.body;
+
+    if (!password || !confirmPassword || password.trim() !== confirmPassword.trim()) {
+      return sendResponse(res, 400, "Passwords don't match");
+    }
+
     const existingBabysitter = await Babysitter.findOne({ email });
     if (existingBabysitter) {
-      return res.status(400).json({ message: 'Email already exists' });
+      return sendResponse(res, 400, 'Email already exists');
     }
+
     const hashedPassword = await bcrypt.hash(password, parseInt(process.env.ROUNDS, 10));
+
     const newBabysitter = new Babysitter({
       fullname,
       phone_number,
-      age: parsedAge,
+      age: parseInt(age),
       email,
       pref_location,
-      exp: parsedExp,
+      exp: parseInt(exp),
       age_grps: Array.isArray(age_grps) ? age_grps : JSON.parse(age_grps),
       password: hashedPassword,
       national_card_number,
@@ -86,31 +76,34 @@ router.post('/register_babysitter', upload.single('profilePhoto'), async (req, r
     });
 
     await newBabysitter.save();
-    // Send OTP email
     await sendOTPEmail(email);
-    
-    res.status(201).json({ message: 'Babysitter registered successfully. An OTP has been sent to your email.' });
+
+    const profilePictureUrl = newBabysitter.profilePhoto
+      ? `http://localhost:4000/${newBabysitter.profilePhoto}`
+      : null;
+    sendResponse(res, 201, 'Babysitter registered successfully! OTP sent.', '', '', profilePictureUrl);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Registration failed', error });
+    sendResponse(res, 500, 'Error registering babysitter');
   }
 });
 
-// Mother Registration
+// ✅ Mother Registration
 router.post('/register_mother', upload.single('profilePhoto'), async (req, res) => {
-  const { fullname, phone_number, password, confirmPassword, email } = req.body;
-
-  if (!password || !confirmPassword || password.trim() !== confirmPassword.trim()) {
-    return res.status(400).json({ message: "Passwords don't match" });
-  }
-
   try {
+    const { fullname, phone_number, email, password, confirmPassword } = req.body;
+
+    if (!password || !confirmPassword || password.trim() !== confirmPassword.trim()) {
+      return sendResponse(res, 400, "Passwords don't match");
+    }
+
     const existingMother = await Mother.findOne({ email });
     if (existingMother) {
-      return res.status(400).json({ message: 'Email already exists' });
+      return sendResponse(res, 400, 'Email already exists');
     }
 
     const hashedPassword = await bcrypt.hash(password, parseInt(process.env.ROUNDS, 10));
+
     const newMother = new Mother({
       fullname,
       phone_number,
@@ -120,20 +113,19 @@ router.post('/register_mother', upload.single('profilePhoto'), async (req, res) 
     });
 
     await newMother.save();
-    
-    // Generate a random 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    // Send OTP email
-    await sendOTPEmail(email, otp);
-    
-    res.status(201).json({ message: 'Mother registered successfully. An OTP has been sent to your email.' });
+    await sendOTPEmail(email);
+
+    const profilePictureUrl = newMother.profilePhoto
+      ? `http://localhost:4000/${newMother.profilePhoto}`
+      : null;
+
+    sendResponse(res, 201, 'Mother registered successfully! OTP sent.', '', '', profilePictureUrl);
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error registering mother', error });
+    sendResponse(res, 500, 'Error registering mother');
   }
 });
-
-// Debugging DB connection state
 console.log("MongoDB Ready State:", mongoose.connection.readyState);
 
 module.exports = router;
