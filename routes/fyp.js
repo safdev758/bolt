@@ -51,34 +51,24 @@ router.get('/recommended-babysitters', authenticateToken, async (req, res) => {
   }
 });
 
-// 2. Saved babysitters (unchanged logic – casting strings to ObjectId)
+// 2. Saved babysitters (no available filter, raw docs)
 router.get('/saved-babysitters', authenticateToken, async (req, res) => {
   try {
-    const motherData = await Mother.findById(req.motherId).lean();
-    if (!motherData) return res.status(404).json({ message: 'Mother not found' });
+    const mother = await Mother.findById(req.motherId).lean();
+    if (!mother) return res.status(404).json({ message: 'Mother not found' });
 
-    const savedIds = motherData.saved_babysitters || [];
+    const savedIds = mother.saved_babysitters || [];
     if (!savedIds.length) return res.json([]);
 
-    // Fetch all available babysitters
-    const allBabysitters = await Babysitter.find({ available: true }).lean();
+    // Load every babysitter (no availability filter)
+    const allBabysitters = await Babysitter.find().lean();
 
-    // Filter by matching _id.toString() with the savedIds
-    const savedWithRatings = allBabysitters.filter(bs =>
+    // Filter by the mother’s saved string IDs, return unmodified docs
+    const saved = allBabysitters.filter(bs =>
       savedIds.includes(bs._id.toString())
-    ).map(bs => {
-      const ratings = bs.ratings || [];
-      const avgRating = ratings.length
-        ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
-        : 0;
-      return { ...bs, avgRating };
-    });
+    );
 
-    // Sort by average rating in descending order
-    savedWithRatings.sort((a, b) => b.avgRating - a.avgRating);
-
-    // Return the saved babysitters with ratings
-    res.json(savedWithRatings);
+    res.json(saved);
 
   } catch (error) {
     console.error('Error fetching saved babysitters:', error);
@@ -86,34 +76,28 @@ router.get('/saved-babysitters', authenticateToken, async (req, res) => {
   }
 });
 
-// GET favorite babysitters (full documents) via findById per ID
-// GET favorite babysitters (full documents) by JS filtering
+// 3. Favorite babysitters (no available filter, raw docs)
 router.get('/favorite-babysitters', authenticateToken, async (req, res) => {
   try {
-    // 1. Load mother
     const mother = await Mother.findById(req.motherId).lean();
     if (!mother) return res.status(404).json({ message: 'Mother not found' });
 
-    // 2. Grab stored string IDs
-    const favIds = Array.isArray(mother.favorite_babysitters)
-      ? mother.favorite_babysitters
-      : [];
+    const favIds = mother.favorite_babysitters || [];
     if (!favIds.length) return res.json([]);
 
-    // 3. Load all available babysitters (or remove filter if you want all)
-    const allBabysitters = await Babysitter.find({ available: true }).lean();
+    // Load every babysitter (no availability filter)
+    const allBabysitters = await Babysitter.find().lean();
 
-    // 4. Filter in JS by matching _id.toString() against the stored strings
+    // Filter by the mother’s favorite string IDs, return unmodified docs
     const favorites = allBabysitters.filter(bs =>
       favIds.includes(bs._id.toString())
     );
 
-    // 5. Return the favorites
     res.json(favorites);
 
-  } catch (err) {
-    console.error('Error fetching favorites:', err);
-    res.status(500).json({ message: 'Something went wrong', error: err.message });
+  } catch (error) {
+    console.error('Error fetching favorite babysitters:', error);
+    res.status(500).json({ message: 'Something went wrong', error: error.message });
   }
 });
 
