@@ -3,8 +3,6 @@ const router = express.Router();
 const Babysitter = require('../models/babysitter');
 const Mother = require('../models/mother');
 const auth = require('../middlewares/auth');  // Import auth middleware
-
-// Update Mother Profile - Apply authentication
 router.put('/updateMotherProfile', auth, async (req, res) => {
     try {
       const { fullname, pref_location, preferred_age_groups, bio, profilePhoto } = req.body;

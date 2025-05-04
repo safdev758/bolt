@@ -91,7 +91,7 @@ router.post('/register_babysitter', upload.single('profilePhoto'), async (req, r
 // ✅ Mother Registration
 router.post('/register_mother', upload.single('profilePhoto'), async (req, res) => {
   try {
-    const { fullname, phone_number, email, password, confirmPassword } = req.body;
+    const { fullname, phone_number, email, password, confirmPassword,pref_location } = req.body;
 
     if (!password || !confirmPassword || password.trim() !== confirmPassword.trim()) {
       return sendResponse(res, 400, "Passwords don't match");
@@ -109,6 +109,7 @@ router.post('/register_mother', upload.single('profilePhoto'), async (req, res) 
       phone_number,
       email,
       password: hashedPassword,
+      pref_location,
       profilePhoto: req.file ? req.file.path : undefined,
     });
 

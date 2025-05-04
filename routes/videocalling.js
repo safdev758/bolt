@@ -31,7 +31,6 @@ function initSocket(server) {
   io.on('connection', (socket) => {
     console.log('User connected:', socket.user);
     socket.join(socket.user.id);
-
     socket.on('call-user', ({ calleeId, offer }) => {
       io.to(calleeId).emit('incoming-call', {
         from: socket.user.id,

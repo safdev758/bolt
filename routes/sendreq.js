@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/auth');
+const BabysittingRequest = require('../models/BabysittingRequest'); // Import the BabysittingRequest model
 router.post('/send-request/:babysitterId', auth, async (req, res) => {
     const { babysitterId } = req.params;
     const { name, age, date, time,message } = req.body;

@@ -31,7 +31,7 @@ router.post('/login/babysitter', async (req, res) => {
       return sendResponse(res, 401, 'Incorrect credentials or password');
     }
 
-    const accessToken = jwt.sign({ userId: babysitter._id }, process.env.SECRET_KEY, { expiresIn: '15m' });
+    const accessToken = jwt.sign({ userId: babysitter._id }, process.env.SECRET_KEY, { expiresIn: '5h' });
     const refreshToken = jwt.sign({ userId: babysitter._id }, process.env.REFRESH_SECRET_KEY, { expiresIn: '7d' });
 
     babysitter.refreshToken = refreshToken;
@@ -57,7 +57,9 @@ router.post('/login/mother', async (req, res) => {
       return sendResponse(res, 400, 'Please provide phone number or full name and password');
     }
 
-    const query = isNaN(identifier) ? { fullName: identifier } : { phoneNumber: identifier };
+    const query = isNaN(identifier)
+  ? { fullname: identifier }
+  : { phone_number: identifier };
     const mother = await Mother.findOne(query);
 
     if (!mother) {
@@ -69,7 +71,7 @@ router.post('/login/mother', async (req, res) => {
       return sendResponse(res, 401, 'Incorrect password');
     }
 
-    const accessToken = jwt.sign({ userId: mother._id }, process.env.SECRET_KEY, { expiresIn: '15m' });
+    const accessToken = jwt.sign({ userId: mother._id }, process.env.SECRET_KEY, { expiresIn: '3h' });
     const refreshToken = jwt.sign({ userId: mother._id }, process.env.REFRESH_SECRET_KEY, { expiresIn: '7d' });
 
     mother.refreshToken = refreshToken;
@@ -105,7 +107,7 @@ router.post('/token', async (req, res) => {
       return sendResponse(res, 403, 'Invalid refresh token');
     }
 
-    const newAccessToken = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: '15m' });
+    const newAccessToken = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: '3h' });
     sendResponse(res, 200, 'Token refreshed successfully', newAccessToken);
   } catch (error) {
     console.error(error);

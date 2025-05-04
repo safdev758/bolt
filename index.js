@@ -13,7 +13,6 @@ const cors = require('cors');
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -51,6 +50,11 @@ const babysitterContactRoutes = require("./routes/babysitterContacts");
 const searchbyname =require("./routes/serachbyname");
 const support_contact = require("./routes/support")
 const getacceptedreq=require("./routes/getacceptedreq")
+const addtofavourite = require("./routes/addtofavourite")
+const savebabysitter = require("./routes/savebabysitter")
+
+app.use(savebabysitter)
+app.use(addtofavourite)
 app.use(support_contact)
 app.use(getacceptedreq)
 app.use(searchbyname)

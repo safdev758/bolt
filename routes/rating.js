@@ -16,6 +16,7 @@ const authenticateMother = async (req, res, next) => {
     req.mother = mother;
     next();
   } catch (err) {
+
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
@@ -30,7 +31,10 @@ router.post('/rate-babysitter', authenticateMother, async (req, res) => {
     const babysitter = await Babysitter.findById(babysitterId);
     if (!babysitter) return res.status(404).json({ message: 'Babysitter not found' });
     babysitter.ratings = babysitter.ratings || [];
-    babysitter.ratings.push({ motherId: req.mother._id, stars });
+    babysitter.ratings.push({
+      motherId: req.mother._id,
+      rating: stars              
+    });
 
     await babysitter.save();
 
