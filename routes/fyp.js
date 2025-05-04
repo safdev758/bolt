@@ -50,8 +50,6 @@ router.get('/recommended-babysitters', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Something went wrong', error: error.message });
   }
 });
-
-// 2. Saved babysitters (no available filter, raw docs)
 router.get('/saved-babysitters', authenticateToken, async (req, res) => {
   try {
     const mother = await Mother.findById(req.motherId).lean();
@@ -75,7 +73,6 @@ router.get('/saved-babysitters', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Something went wrong', error: error.message });
   }
 });
-
 // 3. Favorite babysitters (no available filter, raw docs)
 router.get('/favorite-babysitters', authenticateToken, async (req, res) => {
   try {
