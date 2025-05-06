@@ -22,7 +22,7 @@ const motherSchema = new mongoose.Schema({
     },
     favorite_babysitters: {
       type: [String],
-      ref: 'babysitters'
+      ref: 'Babysitter'
     },
     profilePhoto:{
       type:String,
@@ -47,12 +47,12 @@ const motherSchema = new mongoose.Schema({
     },
     saved_babysitters: {
       type: [String],
-      ref: 'babysitters'
+      ref: 'Babysitter'
     },
     
     contacts: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'babysitters'
+      ref: 'Babysitter'
     }]
 ,    
     bio: {

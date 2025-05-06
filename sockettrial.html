@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.io Test Client</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+        }
+        .panel {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+        .log-container {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            background-color: #f8f8f8;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .form-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .form-row label {
+            width: 120px;
+            padding: 10px 0;
+        }
+        .form-row input {
+            flex-grow: 1;
+            padding: 8px;
+        }
+        #message-input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Socket.io Test Client</h1>
+        
+        <div class="panel">
+            <h2>Connection Settings</h2>
+            <div class="form-row">
+                <label for="server-url">Server URL:</label>
+                <input type="text" id="server-url" value="http://localhost:3000">
+            </div>
+            <div class="form-row">
+                <label for="token">JWT Token:</label>
+                <input type="text" id="token" placeholder="Enter your JWT token">
+            </div>
+            <div class="form-row">
+                <label for="recipient-id">Recipient ID:</label>
+                <input type="text" id="recipient-id" placeholder="Enter recipient user ID">
+            </div>
+            <button id="connect-btn">Connect</button>
+            <button id="disconnect-btn" disabled>Disconnect</button>
+        </div>
+        
+        <div class="panel">
+            <h2>Messaging</h2>
+            <input type="text" id="message-input" placeholder="Type a message..." disabled>
+            <button id="send-btn" disabled>Send Message</button>
+        </div>
+        
+        <div class="panel">
+            <h2>Connection Log</h2>
+            <div id="log" class="log-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Elements
+        const serverUrlInput = document.getElementById('server-url');
+        const tokenInput = document.getElementById('token');
+        const recipientIdInput = document.getElementById('recipient-id');
+        const messageInput = document.getElementById('message-input');
+        const connectBtn = document.getElementById('connect-btn');
+        const disconnectBtn = document.getElementById('disconnect-btn');
+        const sendBtn = document.getElementById('send-btn');
+        const logContainer = document.getElementById('log');
+        
+        // Socket instance
+        let socket = null;
+        
+        // Add log entry
+        function log(message, type = '') {
+            const entry = document.createElement('div');
+            if (type) entry.classList.add(type);
+            
+            // Add timestamp
+            const now = new Date();
+            const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            
+            entry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // Connect button click handler
+        connectBtn.addEventListener('click', () => {
+            const serverUrl = serverUrlInput.value.trim();
+            const token = tokenInput.value.trim();
+            
+            if (!serverUrl) {
+                return log('Server URL is required', 'error');
+            }
+            
+            if (!token) {
+                return log('JWT Token is required', 'error');
+            }
+            
+            // Cleanup previous socket if exists
+            if (socket) {
+                socket.disconnect();
+            }
+            
+            // Show connecting status
+            log(`Connecting to ${serverUrl}...`, 'info');
+            
+            try {
+                // Initialize socket connection
+                socket = io(serverUrl, {
+                    auth: { token },
+                    reconnection: false
+                });
+                
+                // Socket event handlers
+                socket.on('connect', () => {
+                    log('Connected successfully!', 'success');
+                    log(`Socket ID: ${socket.id}`, 'info');
+                    
+                    // Enable messaging controls
+                    messageInput.disabled = false;
+                    sendBtn.disabled = false;
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = false;
+                });
+                
+                socket.on('connect_error', (error) => {
+                    log(`Connection error: ${error.message}`, 'error');
+                    
+                    if (error.message.includes('Authentication')) {
+                        log('Possible authentication issues:', 'warning');
+                        log('1. The token may be invalid or expired', 'warning');
+                        log('2. The server\'s JWT_SECRET may not match the one used to create the token', 'warning');
+                    }
+                });
+                
+                socket.on('error', (error) => {
+                    log(`Socket error: ${error}`, 'error');
+                });
+                
+                socket.on('disconnect', () => {
+                    log('Disconnected from server', 'warning');
+                    
+                    // Disable messaging controls
+                    messageInput.disabled = true;
+                    sendBtn.disabled = true;
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+                });
+                
+                // Listen for incoming messages
+                socket.on('receive-message', (message) => {
+                    log(`Received message from ${message.from}: ${message.content} (${message.type})`, 'info');
+                });
+                
+            } catch (error) {
+                log(`Error initializing socket: ${error.message}`, 'error');
+            }
+        });
+        
+        // Disconnect button click handler
+        disconnectBtn.addEventListener('click', () => {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        });
+        
+        // Send message button click handler
+        sendBtn.addEventListener('click', () => {
+            const recipientId = recipientIdInput.value.trim();
+            const content = messageInput.value.trim();
+            
+            if (!recipientId) {
+                return log('Recipient ID is required', 'error');
+            }
+            
+            if (!content) {
+                return log('Message content is required', 'error');
+            }
+            
+            if (!socket || !socket.connected) {
+                return log('Not connected to server', 'error');
+            }
+            
+            // Send message
+            const messageData = {
+                to: recipientId,
+                type: 'text',
+                content
+            };
+            
+            socket.emit('send-message', messageData);
+            log(`Sent message to ${recipientId}: ${content}`, 'success');
+            messageInput.value = '';
+        });
+        
+        // Allow sending message with Enter key
+        messageInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendBtn.click();
+            }
+        });
+        
+        // Initial log
+        log('Socket.io Test Client initialized. Click "Connect" to start.', 'info');
+    </script>
+</body>
+</html>

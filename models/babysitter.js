@@ -88,7 +88,7 @@ const babysitterSchema = new mongoose.Schema({
     default: true  // true means the babysitter is generally available
   },contacts: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'mothers'  // This points to the Mother model
+    ref: 'Mother'  // This points to the Mother model
   }]
   
 }, { timestamps: true });
