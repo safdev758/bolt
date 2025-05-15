@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Babysitter = require('../models/babysitter');
 const Mother = require('../models/mother');
-
 // ✅ Helper function to send structured responses
 function sendResponse(res, statusCode, message, access = '', refresh = '', profilePicture = null) {
   res.status(statusCode).json({ message, access, refresh, profilePicture });
@@ -71,7 +70,7 @@ router.post('/login/mother', async (req, res) => {
       return sendResponse(res, 401, 'Incorrect password');
     }
 
-    const accessToken = jwt.sign({ userId: mother._id }, process.env.SECRET_KEY, { expiresIn: '3h' });
+    const accessToken = jwt.sign({ userId: mother._id }, process.env.SECRET_KEY, { expiresIn: '5h' });
     const refreshToken = jwt.sign({ userId: mother._id }, process.env.REFRESH_SECRET_KEY, { expiresIn: '7d' });
 
     mother.refreshToken = refreshToken;

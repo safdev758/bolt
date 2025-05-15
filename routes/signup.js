@@ -8,8 +8,6 @@ const multer = require('multer');
 const upload = require('../middlewares/upload');
 const { default: mongoose } = require('mongoose');
 const nodemailer = require('nodemailer');
-
-// ✅ Configure nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {

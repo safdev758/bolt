@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const Mother = require('../models/mother');
 const Babysitter = require('../models/babysitter');
-
 let ioInstance = null;
 
 // Auth middleware: verifies JWT and attaches userId
@@ -28,8 +27,6 @@ function authenticateSocket(socket, next) {
     next();
   });
 }
-
-// Add mutual contacts between two user IDs
 async function addContact(userId, contactUserId) {
   await Promise.all([
     Mother.findByIdAndUpdate(userId, { $addToSet: { contacts: contactUserId } }),
@@ -137,5 +134,4 @@ function initSocket(server) {
   ioInstance = io;
   return io;
 }
-
 module.exports = (server) => initSocket(server);
