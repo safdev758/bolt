@@ -5,8 +5,8 @@ const bcrypt = require('bcrypt');
 const Babysitter = require('../models/babysitter');
 const Mother = require('../models/mother');
 // ✅ Helper function to send structured responses
-function sendResponse(res, statusCode, message, access = '', refresh = '', profilePicture = null) {
-  res.status(statusCode).json({ message, access, refresh, profilePicture });
+function sendResponse(res, statusCode, message, access = '', refresh = '', profilePicture = null,information =null) {
+  res.status(statusCode).json({ message, access, refresh, profilePicture,information });
 }
 
 // ✅ Babysitter Login
@@ -40,7 +40,7 @@ router.post('/login/babysitter', async (req, res) => {
       ? `http://localhost:4000/${babysitter.profilePhoto}`
       : null;
 
-    sendResponse(res, 200, 'Login successful', accessToken, refreshToken, profilePictureUrl);
+    sendResponse(res, 200, 'Login successful', accessToken, refreshToken, profilePictureUrl,babysitter);
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, 'Error logging in');
@@ -80,7 +80,7 @@ router.post('/login/mother', async (req, res) => {
       ? `http://localhost:4000/${mother.profilePicture}`
       : null;
 
-    sendResponse(res, 200, 'Login successful', accessToken, refreshToken, profilePictureUrl);
+    sendResponse(res, 200, 'Login successful', accessToken, refreshToken, profilePictureUrl,mother);
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, 'Error logging in');
