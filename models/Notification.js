@@ -5,7 +5,6 @@ const notificationSchema = new mongoose.Schema({
   userType: { type: String, enum: ['Mother', 'Babysitter'], required: true },
   message: { type: String, required: true },
   read: { type: Boolean, default: false },
-  type: { type: String, enum: ['accepted', 'completed'], default: 'accepted' },
+  type: { type: String, enum: ['accepted', 'completed','pending'], default: 'accepted' },
 }, { timestamps: true });
-
 module.exports = mongoose.model('Notification', notificationSchema);

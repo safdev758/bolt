@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/auth');
+const BabysittingRequest = require('../models/BabysittingRequest');
+const Babysitter = require('../models/babysitter'); // Import the Babysitter model
 router.post('/requests/:requestId/accept', auth, async (req, res) => {
     const { requestId } = req.params;
     const request = await BabysittingRequest.findById(requestId)
@@ -25,7 +27,7 @@ router.post('/requests/:requestId/accept', auth, async (req, res) => {
     // Create Notification
     await Notification.create({
       user: request.mother._id,
-      userType: 'Mother',
+      userType: 'Babysitter',
       message: `Your babysitting request for ${request.child.name} was accepted.`,
       type: 'accepted'
     });
