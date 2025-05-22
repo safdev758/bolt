@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/auth');
+const BabysittingRequest = require('../models/BabysittingRequest');
 router.get('/requests', auth, async (req, res) => {
     const babysitterId = req.user.id;
     const requests = await BabysittingRequest.find({ babysitter: babysitterId, status: 'pending' })
