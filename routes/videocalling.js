@@ -5,28 +5,26 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const Mother = require('../models/mother');
 const Babysitter = require('../models/babysitter');
+const Message = require('../models/message');
 let ioInstance = null;
 
 // Auth middleware: verifies JWT and attaches userId
 function authenticateSocket(socket, next) {
   const token = socket.handshake.auth.token;
-  console.log('🛂 Token received:', token);
-
   if (!token) {
     return next(new Error('Authentication error: No token provided'));
   }
 
   jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
     if (err) {
-      console.log('❌ JWT Verification failed:', err.message);
       return next(new Error('Authentication error: Invalid token'));
     }
 
-    console.log('✅ JWT decoded:', decoded);
     socket.user = { id: decoded.userId };
     next();
   });
 }
+
 async function addContact(userId, contactUserId) {
   await Promise.all([
     Mother.findByIdAndUpdate(userId, { $addToSet: { contacts: contactUserId } }),
@@ -47,7 +45,6 @@ function initSocket(server) {
   io.use(authenticateSocket);
 
   io.on('connection', (socket) => {
-    console.log('User connected:', socket.user);
     socket.join(socket.user.id); // join room named after user's MongoDB ID
 
     // WebRTC call signaling
@@ -59,27 +56,27 @@ function initSocket(server) {
     });
 
     socket.on('answer-call', ({ callerId, answer }) => {
-      const targetRoom = mongoose.Types.ObjectId.isValid(callerId)
-        ? callerId
-        : callerId;
-      io.to(targetRoom).emit('call-answered', { from: socket.user.id, answer });
+      io.to(callerId).emit('call-answered', { from: socket.user.id, answer });
     });
 
     socket.on('send-ice-candidate', ({ targetId, candidate }) => {
-      const targetRoom = mongoose.Types.ObjectId.isValid(targetId)
-        ? targetId
-        : targetId;
-      io.to(targetRoom).emit('ice-candidate', { from: socket.user.id, candidate });
+      io.to(targetId).emit('ice-candidate', { from: socket.user.id, candidate });
     });
 
-    // Messaging
+    // Messaging with persistence
     socket.on('send-message', async ({ to, type, content }) => {
       const allowedTypes = ['text', 'image'];
       if (!allowedTypes.includes(type)) {
         return socket.emit('error', { message: 'Invalid message type' });
       }
 
-      // Broadcast to the appropriate room
+      // Determine sender and recipient models
+      let senderModel = 'mother';
+      let recipientModel = 'mother';
+      if (!await Mother.exists({ _id: socket.user.id })) senderModel = 'babysitter';
+      if (!await Mother.exists({ _id: to })) recipientModel = 'babysitter';
+
+      // Broadcast to the recipient room
       io.to(to).emit('receive-message', {
         from: socket.user.id,
         type,
@@ -87,22 +84,23 @@ function initSocket(server) {
         timestamp: new Date()
       });
 
-      // Determine the actual userId for contact updates
-      let contactUserId = null;
-      if (mongoose.Types.ObjectId.isValid(to)) {
-        contactUserId = to;
-      } else if (io.sockets.sockets.has(to)) {
-        contactUserId = io.sockets.sockets.get(to).user.id;
-      } else {
-        console.warn(`Skipping contact update for invalid ID: ${to}`);
-        return;
-      }
-
-      // Update contacts in MongoDB
       try {
-        await addContact(socket.user.id, contactUserId);
+        // Save message to DB
+        await Message.create({
+          sender: socket.user.id,
+          recipient: to,
+          senderModel,
+          recipientModel,
+          type,
+          content,
+          timestamp: new Date()
+        });
+
+        // Update contacts
+        await addContact(socket.user.id, to);
       } catch (err) {
-        console.error('Error adding to contacts:', err);
+        console.error('Error saving message:', err);
+        socket.emit('error', { message: 'Message persistence failed' });
       }
     });
 
@@ -134,4 +132,5 @@ function initSocket(server) {
   ioInstance = io;
   return io;
 }
+
 module.exports = (server) => initSocket(server);

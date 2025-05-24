@@ -44,6 +44,7 @@ const notificationRoutes = require("./routes/notification");
 const refrequestRoutes = require("./routes/refreq");
 const getreqRoutes = require("./routes/getreq");
 const sendreqRoutes = require("./routes/sendreq");
+const loadmessages = require("./routes/load-messages");
 const acceptRoutes = require("./routes/acceptedreq");
 const motherContactRoutes = require("./routes/motherContacts");
 const babysitterContactRoutes = require("./routes/babysitterContacts");
@@ -52,6 +53,7 @@ const support_contact = require("./routes/support")
 const getacceptedreq=require("./routes/getacceptedreq")
 const addtofavourite = require("./routes/addtofavourite")
 const savebabysitter = require("./routes/savebabysitter")
+app.use(loadmessages) // Use the load messages route
 app.use(savebabysitter)
 app.use(addtofavourite)
 app.use(support_contact)
