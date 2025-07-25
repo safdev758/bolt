@@ -11,49 +11,28 @@ let animationMixer, clock;
 let isAnimationPlaying = true;
 let currentTheme = 'cyberpunk';
 
-// Project data with sample projects
+// Khentit Safouane Amine's Real Projects
 let projectsData = [
     {
-        title: "E-Commerce Platform",
-        tech: "React, Node.js, MongoDB",
-        description: "Full-stack shopping platform with real-time inventory",
-        image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%2300ffff'/%3E%3Ctext x='150' y='100' text-anchor='middle' dy='.3em' font-family='Arial' font-size='20' fill='%23000'%3EE-Commerce%3C/text%3E%3C/svg%3E",
-        color: "#00ffff"
+        title: "TotTrust",
+        tech: "Express.js, MongoDB, WebRTC, WebSockets",
+        description: "Babysitting freelance platform with live streaming for baby monitoring and real-time communication",
+        image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2387CEEB;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%234169E1;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='300' height='200' fill='url(%23grad1)'/%3E%3Ccircle cx='80' cy='70' r='25' fill='%23fff' opacity='0.8'/%3E%3Ccircle cx='220' cy='130' r='20' fill='%23fff' opacity='0.6'/%3E%3Ctext x='150' y='90' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' font-weight='bold' fill='%23fff'%3ETotTrust%3C/text%3E%3Ctext x='150' y='120' text-anchor='middle' dy='.3em' font-family='Arial' font-size='14' fill='%23fff'%3EBabysitting Platform%3C/text%3E%3C/svg%3E",
+        color: "#87CEEB"
     },
     {
-        title: "AI Dashboard",
-        tech: "Python, TensorFlow, React",
-        description: "Machine learning analytics dashboard with predictions",
-        image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23ff6b9d'/%3E%3Ctext x='150' y='100' text-anchor='middle' dy='.3em' font-family='Arial' font-size='20' fill='%23fff'%3EAI Dashboard%3C/text%3E%3C/svg%3E",
-        color: "#ff6b9d"
+        title: "Chatty",
+        tech: "Express.js, MongoDB, WebSockets, EJS, Kotlin",
+        description: "Real-time chat platform similar to Telegram/WhatsApp with mobile app using Jetpack Compose",
+        image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Cdefs%3E%3ClinearGradient id='grad2' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%239966CC;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%236A0DAD;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='300' height='200' fill='url(%23grad2)'/%3E%3Crect x='50' y='60' width='200' height='80' rx='10' fill='%23fff' opacity='0.2'/%3E%3Ccircle cx='80' cy='85' r='8' fill='%23fff'/%3E%3Crect x='100' y='80' width='120' height='10' rx='5' fill='%23fff' opacity='0.8'/%3E%3Ccircle cx='80' cy='115' r='8' fill='%2300ffff'/%3E%3Crect x='100' y='110' width='80' height='10' rx='5' fill='%2300ffff' opacity='0.8'/%3E%3Ctext x='150' y='45' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' font-weight='bold' fill='%23fff'%3EChatty%3C/text%3E%3Ctext x='150' y='165' text-anchor='middle' dy='.3em' font-family='Arial' font-size='14' fill='%23fff'%3EMessaging Platform%3C/text%3E%3C/svg%3E",
+        color: "#9966CC"
     },
     {
-        title: "Mobile Banking App",
-        tech: "React Native, Firebase",
-        description: "Secure mobile banking with biometric authentication",
-        image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%2345b7d1'/%3E%3Ctext x='150' y='100' text-anchor='middle' dy='.3em' font-family='Arial' font-size='18' fill='%23fff'%3EBanking App%3C/text%3E%3C/svg%3E",
-        color: "#45b7d1"
-    },
-    {
-        title: "Blockchain Explorer",
-        tech: "Vue.js, Web3, Solidity",
-        description: "Cryptocurrency transaction explorer and wallet tracker",
-        image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23f39c12'/%3E%3Ctext x='150' y='100' text-anchor='middle' dy='.3em' font-family='Arial' font-size='18' fill='%23fff'%3EBlockchain%3C/text%3E%3C/svg%3E",
-        color: "#f39c12"
-    },
-    {
-        title: "IoT Smart Home",
-        tech: "Arduino, MQTT, Node.js",
-        description: "Home automation system with sensor integration",
-        image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%239b59b6'/%3E%3Ctext x='150' y='100' text-anchor='middle' dy='.3em' font-family='Arial' font-size='20' fill='%23fff'%3ESmart Home%3C/text%3E%3C/svg%3E",
-        color: "#9b59b6"
-    },
-    {
-        title: "Social Media API",
-        tech: "NestJS, GraphQL, PostgreSQL",
-        description: "Scalable social media backend with real-time features",
-        image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%234ecdc4'/%3E%3Ctext x='150' y='100' text-anchor='middle' dy='.3em' font-family='Arial' font-size='20' fill='%23fff'%3ESocial API%3C/text%3E%3C/svg%3E",
-        color: "#4ecdc4"
+        title: "JobScout",
+        tech: "NestJS, Angular, PostgreSQL, Puppeteer, Kafka",
+        description: "Job scraping platform that aggregates opportunities from LinkedIn, Indeed, and Upwork with real-time notifications",
+        image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Cdefs%3E%3ClinearGradient id='grad3' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%234B0082;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23800080;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='300' height='200' fill='url(%23grad3)'/%3E%3Crect x='40' y='50' width='220' height='100' rx='8' fill='%23fff' opacity='0.1'/%3E%3Crect x='60' y='70' width='60' height='8' rx='4' fill='%2300ffff'/%3E%3Crect x='60' y='85' width='80' height='6' rx='3' fill='%23fff' opacity='0.7'/%3E%3Crect x='60' y='95' width='100' height='6' rx='3' fill='%23fff' opacity='0.5'/%3E%3Crect x='60' y='110' width='60' height='8' rx='4' fill='%23ff6b9d'/%3E%3Crect x='60' y='125' width='90' height='6' rx='3' fill='%23fff' opacity='0.7'/%3E%3Ctext x='150' y='35' text-anchor='middle' dy='.3em' font-family='Arial' font-size='24' font-weight='bold' fill='%23fff'%3EJobScout%3C/text%3E%3Ctext x='150' y='170' text-anchor='middle' dy='.3em' font-family='Arial' font-size='14' fill='%23fff'%3EJob Aggregator%3C/text%3E%3C/svg%3E",
+        color: "#800080"
     }
 ];
 
@@ -258,9 +237,9 @@ function createDesk() {
 
 function createHolographicScreens() {
     const screenData = [
-        { pos: [-2, 3, -1], content: 'code', title: 'React App' },
-        { pos: [2, 3.5, -0.5], content: 'terminal', title: 'Terminal' },
-        { pos: [0, 4, -2], content: 'dashboard', title: 'Analytics' }
+        { pos: [-2, 3, -1], content: 'code', title: 'NestJS API' },
+        { pos: [2, 3.5, -0.5], content: 'terminal', title: 'Docker & Git' },
+        { pos: [0, 4, -2], content: 'dashboard', title: 'System Monitor' }
     ];
     
     screenData.forEach((data, index) => {
@@ -346,22 +325,23 @@ function drawScreenContent(ctx, type, title) {
     
     if (type === 'code') {
         const codeLines = [
-            'import React from "react";',
-            'import { useState } from "react";',
+            'import { Injectable } from "@nestjs/common";',
+            'import { WebSocketGateway } from "@nestjs/websockets";',
             '',
-            'function App() {',
-            '  const [data, setData] = useState([]);',
-            '  ',
-            '  useEffect(() => {',
-            '    fetchData();',
-            '  }, []);',
-            '',
-            '  return (',
-            '    <div className="app">',
-            '      <Header />',
-            '      <Main data={data} />',
-            '    </div>',
-            '  );',
+            '@Injectable()',
+            'export class JobScrapingService {',
+            '  async scrapeJobs() {',
+            '    const browser = await puppeteer.launch();',
+            '    const page = await browser.newPage();',
+            '    await page.goto("linkedin.com/jobs");',
+            '    ',
+            '    const jobs = await page.$$eval(".job-card",',
+            '      cards => cards.map(card => ({',
+            '        title: card.querySelector("h3").innerText,',
+            '        company: card.querySelector(".company").innerText',
+            '      })));',
+            '    return jobs;',
+            '  }',
             '}'
         ];
         
@@ -371,37 +351,46 @@ function drawScreenContent(ctx, type, title) {
     } else if (type === 'terminal') {
         ctx.fillStyle = '#00ff00';
         const terminalLines = [
-            '$ npm run dev',
-            '> vite',
+            '$ docker-compose up -d',
+            'Creating network "jobscout_default"',
+            'Creating postgres_db ... done',
+            'Creating kafka_broker ... done',
             '',
-            'Local:   http://localhost:3000',
-            'Network: http://192.168.1.100:3000',
+            '$ git add .',
+            '$ git commit -m "Add Puppeteer scraping"',
+            '[main 7a8b9c2] Add Puppeteer scraping',
+            ' 3 files changed, 45 insertions(+)',
             '',
-            '✓ ready in 1.2s',
-            '',
-            '$ git status',
-            'On branch main',
-            'Changes to be committed:',
-            '  modified: src/App.js',
-            '  new file: components/Workspace.js'
+            '$ npm run start:dev',
+            '[Nest] 12345 - NestJS application starting',
+            '[Nest] 12345 - JobScrapingService initialized',
+            '[Nest] 12345 - WebSocket server listening on 3001'
         ];
         
         terminalLines.forEach((line, i) => {
             ctx.fillText(line, 10, 60 + i * 18);
         });
     } else if (type === 'dashboard') {
-        ctx.fillStyle = '#ff6b6b';
-        ctx.fillRect(50, 80, 100, 60);
-        ctx.fillStyle = '#4ecdc4';
-        ctx.fillRect(200, 100, 80, 40);
-        ctx.fillStyle = '#45b7d1';
-        ctx.fillRect(320, 90, 120, 50);
+        // Server metrics bars
+        ctx.fillStyle = '#87CEEB';
+        ctx.fillRect(50, 80, 120, 25);
+        ctx.fillStyle = '#9966CC';
+        ctx.fillRect(200, 100, 100, 25);
+        ctx.fillStyle = '#800080';
+        ctx.fillRect(320, 90, 80, 25);
+        
+        // Kafka metrics
+        ctx.fillStyle = '#00ffff';
+        ctx.fillRect(50, 140, 90, 20);
+        ctx.fillStyle = '#ff6b9d';
+        ctx.fillRect(200, 140, 110, 20);
         
         ctx.fillStyle = '#ffffff';
         ctx.font = '14px sans-serif';
-        ctx.fillText('CPU: 45%', 50, 200);
-        ctx.fillText('Memory: 2.1GB', 50, 220);
-        ctx.fillText('Uptime: 5d 12h', 50, 240);
+        ctx.fillText('TotTrust: Active Users 1.2k', 50, 200);
+        ctx.fillText('Chatty: Messages/sec 450', 50, 220);
+        ctx.fillText('JobScout: Jobs Scraped 15k', 50, 240);
+        ctx.fillText('Kafka: Events Processed 2.8M', 50, 260);
     }
 }
 
@@ -418,9 +407,9 @@ function createBookshelf() {
     shelf.castShadow = true;
     scene.add(shelf);
     
-    // Books
-    const bookTitles = ['NestJS', 'React', 'Docker', 'TypeScript', 'Node.js'];
-    const bookColors = [0xff6b6b, 0x4ecdc4, 0x45b7d1, 0xf39c12, 0x9b59b6];
+    // Books - Khentit's Tech Stack
+    const bookTitles = ['NestJS', 'Angular', 'Docker', 'Kotlin', 'Express.js', 'Puppeteer'];
+    const bookColors = [0xff6b6b, 0x4ecdc4, 0x45b7d1, 0xf39c12, 0x9b59b6, 0x00ffff];
     
     bookTitles.forEach((title, index) => {
         const bookGeometry = new THREE.BoxGeometry(0.2, 1.2, 0.8);
@@ -449,8 +438,8 @@ function createBookshelf() {
 }
 
 function createTrophyShelf() {
-    // Trophy shelf
-    const shelfGeometry = new THREE.BoxGeometry(4, 0.2, 1);
+    // Trophy shelf - Extended for more trophies
+    const shelfGeometry = new THREE.BoxGeometry(5.5, 0.2, 1);
     const shelfMaterial = new THREE.MeshStandardMaterial({
         color: 0x2a2a3e,
         metalness: 0.6,
@@ -462,12 +451,13 @@ function createTrophyShelf() {
     trophyShelf.castShadow = true;
     scene.add(trophyShelf);
     
-    // Trophy icons (simplified geometric representations)
+    // Trophy icons - Khentit's Core Skills
     const trophyData = [
-        { name: 'PostgreSQL', color: 0x336791, pos: [-1.5, 0.5, 0] },
-        { name: 'MongoDB', color: 0x47a248, pos: [-0.5, 0.5, 0] },
-        { name: 'Prisma', color: 0x2d3748, pos: [0.5, 0.5, 0] },
-        { name: 'GraphQL', color: 0xe10098, pos: [1.5, 0.5, 0] }
+        { name: 'PostgreSQL', color: 0x336791, pos: [-2, 0.5, 0] },
+        { name: 'MongoDB', color: 0x47a248, pos: [-1, 0.5, 0] },
+        { name: 'MySQL', color: 0xf29111, pos: [0, 0.5, 0] },
+        { name: 'GraphQL', color: 0xe10098, pos: [1, 0.5, 0] },
+        { name: 'Git/GitHub', color: 0x6cc644, pos: [2, 0.5, 0] }
     ];
     
     trophyData.forEach((trophy, index) => {
@@ -581,7 +571,7 @@ function createAIJar() {
     labelCtx.fillStyle = '#000000';
     labelCtx.font = '20px Arial';
     labelCtx.textAlign = 'center';
-    labelCtx.fillText('Problem Solver', 128, 35);
+    labelCtx.fillText('Khentit\'s AI Brain', 128, 35);
     
     const labelTexture = new THREE.CanvasTexture(labelCanvas);
     const labelMaterial = new THREE.MeshStandardMaterial({ map: labelTexture });
@@ -770,38 +760,39 @@ function createProjectImageCanvas(project) {
 }
 
 function createFloatingInfoCards() {
+    // Khentit Safouane Amine's Personal Information
     const personalInfo = [
         { 
-            title: "💻 Full Stack Developer", 
-            content: "5+ years of experience building scalable web applications",
+            title: "👨‍💻 Khentit Safouane Amine", 
+            content: "20-year-old Full Stack Developer studying at Higher National School of Computer Science, Sidi-Bel-Abbès",
             color: "#00ffff",
             startPos: [-15, 8, 5],
             endPos: [-8, 6, 3]
         },
         { 
-            title: "🚀 Tech Enthusiast", 
-            content: "Passionate about emerging technologies and clean code",
+            title: "🏗️ Systems Design Expert", 
+            content: "Specialized in scalable backend architectures with microservices and real-time communication",
             color: "#ff6b9d",
             startPos: [15, 9, 4],
             endPos: [8, 5, 2]
         },
         { 
-            title: "🎯 Problem Solver", 
-            content: "Love tackling complex challenges with innovative solutions",
+            title: "🤖 AI Integration Specialist", 
+            content: "Experienced in integrating AI solutions and building intelligent automation systems",
             color: "#45b7d1",
             startPos: [-12, 12, -8],
             endPos: [-6, 7, -5]
         },
         { 
-            title: "🌟 Team Player", 
-            content: "Experienced in agile development and cross-team collaboration",
+            title: "🕷️ Web Scraping Master", 
+            content: "Expert in Puppeteer and BrightData for extracting and processing web data at scale",
             color: "#f39c12",
             startPos: [18, 6, -6],
             endPos: [10, 4, -3]
         },
         { 
-            title: "📚 Continuous Learner", 
-            content: "Always exploring new frameworks and best practices",
+            title: "📱 Full Stack Mobile Dev", 
+            content: "Building cross-platform solutions with Kotlin Jetpack Compose and modern web technologies",
             color: "#9b59b6",
             startPos: [-20, 15, 2],
             endPos: [-12, 8, 1]
