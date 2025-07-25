@@ -136,12 +136,20 @@
             <h3>🚀 Developer Workspace</h3>
             <p>Navigate: Mouse + Drag<br>Zoom: Scroll Wheel<br>Explore the holographic environment</p>
         </div>
+        <div class="info-panel">
+            <h3>🖼️ Project Gallery</h3>
+            <p>Filtered project showcase<br>Color-matched to workspace theme<br>Floating personal info cards</p>
+        </div>
     </div>
     
     <div id="controls">
         <button class="control-btn" onclick="resetCamera()">🎯 Reset View</button>
         <button class="control-btn" onclick="toggleAnimation()">⏯️ Animation</button>
         <button class="control-btn" onclick="switchTheme()">🎨 Theme</button>
+        <button class="control-btn" onclick="focusGallery()">🖼️ Gallery</button>
+        <button class="control-btn" onclick="resetInfoCards()">✨ Reset Cards</button>
+        <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+        <button class="control-btn" onclick="document.getElementById('imageUpload').click()">📸 Add Project</button>
     </div>
     
     <script type="module" src="./main.js"></script>
