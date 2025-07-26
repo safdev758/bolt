@@ -11,6 +11,11 @@ let animationMixer, clock;
 let isAnimationPlaying = true;
 let currentTheme = 'cyberpunk';
 
+// Camera control variables
+let targetRotationX = 0, targetRotationY = 0;
+let rotationX = 0, rotationY = 0;
+let currentDistance = 8;
+
 // Khentit Safouane Amine's Real Projects
 let projectsData = [
     {
@@ -42,19 +47,20 @@ function init() {
     scene = new THREE.Scene();
     scene.fog = new THREE.Fog(0x0a0a0a, 10, 100);
     
-    // Create camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(8, 6, 12);
+    // Create camera with better positioning
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(4, 3, 8);
     camera.lookAt(0, 2, 0);
     
-    // Create renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // Create renderer with better settings
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(0x0a0a0a, 1);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.2;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     
     document.getElementById('canvas-container').appendChild(renderer.domElement);
     
@@ -100,16 +106,15 @@ function simulateLoading() {
 }
 
 function addOrbitControls() {
-    // Simple mouse controls without external library
+    // Improved mouse controls with better sensitivity and limits
     let isMouseDown = false;
     let mouseX = 0, mouseY = 0;
-    let targetRotationX = 0, targetRotationY = 0;
-    let rotationX = 0, rotationY = 0;
     
     renderer.domElement.addEventListener('mousedown', (event) => {
         isMouseDown = true;
         mouseX = event.clientX;
         mouseY = event.clientY;
+        renderer.domElement.style.cursor = 'grabbing';
     });
     
     renderer.domElement.addEventListener('mousemove', (event) => {
@@ -117,8 +122,11 @@ function addOrbitControls() {
             const deltaX = event.clientX - mouseX;
             const deltaY = event.clientY - mouseY;
             
-            targetRotationY += deltaX * 0.01;
-            targetRotationX += deltaY * 0.01;
+            targetRotationY += deltaX * 0.005; // Reduced sensitivity
+            targetRotationX += deltaY * 0.005;
+            
+            // Limit vertical rotation
+            targetRotationX = Math.max(-Math.PI/3, Math.min(Math.PI/3, targetRotationX));
             
             mouseX = event.clientX;
             mouseY = event.clientY;
@@ -127,22 +135,30 @@ function addOrbitControls() {
     
     renderer.domElement.addEventListener('mouseup', () => {
         isMouseDown = false;
+        renderer.domElement.style.cursor = 'grab';
     });
     
     renderer.domElement.addEventListener('wheel', (event) => {
-        const scale = event.deltaY > 0 ? 1.1 : 0.9;
-        camera.position.multiplyScalar(scale);
+        event.preventDefault();
+        const zoomSpeed = 0.1;
+        const delta = event.deltaY > 0 ? 1 + zoomSpeed : 1 - zoomSpeed;
+        
+        currentDistance *= delta;
+        // Limit zoom distance
+        currentDistance = Math.max(3, Math.min(15, currentDistance));
     });
+    
+    // Set initial cursor
+    renderer.domElement.style.cursor = 'grab';
     
     // Update camera rotation
     function updateCamera() {
-        rotationX += (targetRotationX - rotationX) * 0.1;
-        rotationY += (targetRotationY - rotationY) * 0.1;
+        rotationX += (targetRotationX - rotationX) * 0.15; // Smoother interpolation
+        rotationY += (targetRotationY - rotationY) * 0.15;
         
-        const radius = camera.position.length();
-        camera.position.x = radius * Math.sin(rotationY) * Math.cos(rotationX);
-        camera.position.y = radius * Math.sin(rotationX);
-        camera.position.z = radius * Math.cos(rotationY) * Math.cos(rotationX);
+        camera.position.x = currentDistance * Math.sin(rotationY) * Math.cos(rotationX);
+        camera.position.y = currentDistance * Math.sin(rotationX) + 2; // Offset to look at desk level
+        camera.position.z = currentDistance * Math.cos(rotationY) * Math.cos(rotationX);
         camera.lookAt(0, 2, 0);
         
         requestAnimationFrame(updateCamera);
@@ -1074,12 +1090,21 @@ function animate() {
 // Global functions for UI controls (only run in browser)
 if (typeof window !== 'undefined') {
     window.resetCamera = function() {
+        // Reset rotation values
+        targetRotationX = 0;
+        targetRotationY = 0;
+        currentDistance = 8;
+        
         gsap.to(camera.position, {
-            x: 8,
-            y: 6,
-            z: 12,
+            x: 4,
+            y: 3,
+            z: 8,
             duration: 1.5,
             ease: "power2.inOut"
+        });
+        gsap.to(camera, {
+            onUpdate: () => camera.lookAt(0, 2, 0),
+            duration: 1.5
         });
     };
 
@@ -1102,12 +1127,21 @@ if (typeof window !== 'undefined') {
     };
 
     window.focusGallery = function() {
+        // Reset camera controls for gallery view
+        targetRotationX = 0.1;
+        targetRotationY = -0.3;
+        currentDistance = 6;
+        
         gsap.to(camera.position, {
-            x: -8,
+            x: -6,
             y: 4,
             z: -2,
             duration: 2,
             ease: "power2.inOut"
+        });
+        gsap.to(camera, {
+            onUpdate: () => camera.lookAt(-10, 4, -8),
+            duration: 2
         });
         
         // Make gallery glow more prominently
