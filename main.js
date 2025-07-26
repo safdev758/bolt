@@ -1071,101 +1071,103 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// Global functions for UI controls
-window.resetCamera = function() {
-    gsap.to(camera.position, {
-        x: 8,
-        y: 6,
-        z: 12,
-        duration: 1.5,
-        ease: "power2.inOut"
-    });
-};
+// Global functions for UI controls (only run in browser)
+if (typeof window !== 'undefined') {
+    window.resetCamera = function() {
+        gsap.to(camera.position, {
+            x: 8,
+            y: 6,
+            z: 12,
+            duration: 1.5,
+            ease: "power2.inOut"
+        });
+    };
 
-window.toggleAnimation = function() {
-    isAnimationPlaying = !isAnimationPlaying;
-};
+    window.toggleAnimation = function() {
+        isAnimationPlaying = !isAnimationPlaying;
+    };
 
-window.switchTheme = function() {
-    if (currentTheme === 'cyberpunk') {
-        // Switch to clean theme
-        scene.fog.color.setHex(0xf0f0f0);
-        renderer.setClearColor(0xf8f8f8, 1);
-        currentTheme = 'clean';
-    } else {
-        // Switch back to cyberpunk
-        scene.fog.color.setHex(0x0a0a0a);
-        renderer.setClearColor(0x000000, 0);
-        currentTheme = 'cyberpunk';
-    }
-};
+    window.switchTheme = function() {
+        if (currentTheme === 'cyberpunk') {
+            // Switch to clean theme
+            scene.fog.color.setHex(0xf0f0f0);
+            renderer.setClearColor(0xf8f8f8, 1);
+            currentTheme = 'clean';
+        } else {
+            // Switch back to cyberpunk
+            scene.fog.color.setHex(0x0a0a0a);
+            renderer.setClearColor(0x000000, 0);
+            currentTheme = 'cyberpunk';
+        }
+    };
 
-window.focusGallery = function() {
-    gsap.to(camera.position, {
-        x: -8,
-        y: 4,
-        z: -2,
-        duration: 2,
-        ease: "power2.inOut"
-    });
-    
-    // Make gallery glow more prominently
-    projectGallery.forEach((frame, index) => {
-        gsap.to(frame.children[2].material, {
-            opacity: 0.6,
-            duration: 1,
-            delay: index * 0.1,
-            ease: "power2.out"
+    window.focusGallery = function() {
+        gsap.to(camera.position, {
+            x: -8,
+            y: 4,
+            z: -2,
+            duration: 2,
+            ease: "power2.inOut"
         });
-    });
-};
+        
+        // Make gallery glow more prominently
+        projectGallery.forEach((frame, index) => {
+            gsap.to(frame.children[2].material, {
+                opacity: 0.6,
+                duration: 1,
+                delay: index * 0.1,
+                ease: "power2.out"
+            });
+        });
+    };
 
-window.resetInfoCards = function() {
-    // Re-trigger the flying animation for info cards
-    infoCards.forEach((card, index) => {
-        const info = [
-            { startPos: [-15, 8, 5], endPos: [-8, 6, 3] },
-            { startPos: [15, 9, 4], endPos: [8, 5, 2] },
-            { startPos: [-12, 12, -8], endPos: [-6, 7, -5] },
-            { startPos: [18, 6, -6], endPos: [10, 4, -3] },
-            { startPos: [-20, 15, 2], endPos: [-12, 8, 1] }
-        ][index];
-        
-        // Reset to flying position
-        gsap.set(card.position, {
-            x: info.startPos[0],
-            y: info.startPos[1],
-            z: info.startPos[2]
+    window.resetInfoCards = function() {
+        // Re-trigger the flying animation for info cards
+        infoCards.forEach((card, index) => {
+            const info = [
+                { startPos: [-15, 8, 5], endPos: [-8, 6, 3] },
+                { startPos: [15, 9, 4], endPos: [8, 5, 2] },
+                { startPos: [-12, 12, -8], endPos: [-6, 7, -5] },
+                { startPos: [18, 6, -6], endPos: [10, 4, -3] },
+                { startPos: [-20, 15, 2], endPos: [-12, 8, 1] }
+            ][index];
+            
+            // Reset to flying position
+            gsap.set(card.position, {
+                x: info.startPos[0],
+                y: info.startPos[1],
+                z: info.startPos[2]
+            });
+            
+            gsap.set(card.rotation, {
+                x: (Math.random() - 0.5) * Math.PI,
+                y: (Math.random() - 0.5) * Math.PI,
+                z: (Math.random() - 0.5) * Math.PI
+            });
+            
+            const delay = index * 0.5;
+            
+            // Fly back to position
+            gsap.to(card.rotation, {
+                x: 0,
+                y: 0,
+                z: 0,
+                duration: 2.5,
+                delay: delay,
+                ease: "power2.out"
+            });
+            
+            gsap.to(card.position, {
+                x: info.endPos[0],
+                y: info.endPos[1],
+                z: info.endPos[2],
+                duration: 2.5,
+                delay: delay,
+                ease: "power2.out"
+            });
         });
-        
-        gsap.set(card.rotation, {
-            x: (Math.random() - 0.5) * Math.PI,
-            y: (Math.random() - 0.5) * Math.PI,
-            z: (Math.random() - 0.5) * Math.PI
-        });
-        
-        const delay = index * 0.5;
-        
-        // Fly back to position
-        gsap.to(card.rotation, {
-            x: 0,
-            y: 0,
-            z: 0,
-            duration: 2.5,
-            delay: delay,
-            ease: "power2.out"
-        });
-        
-        gsap.to(card.position, {
-            x: info.endPos[0],
-            y: info.endPos[1],
-            z: info.endPos[2],
-            duration: 2.5,
-            delay: delay,
-            ease: "power2.out"
-        });
-    });
-};
+    };
+}
 
 
 
