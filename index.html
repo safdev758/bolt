@@ -108,19 +108,57 @@
             line-height: 1.4;
         }
         
+        #navigation {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            background: rgba(0, 255, 255, 0.15);
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            color: #00ffff;
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(15px);
+            font-size: 16px;
+            font-weight: bold;
+            min-width: 140px;
+            text-align: center;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+        
+        .nav-btn.active {
+            background: rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+        }
+        
         #controls {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 10;
+            display: flex;
+            gap: 10px;
         }
         
         .control-btn {
-            background: rgba(0, 255, 255, 0.1);
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            color: #00ffff;
+            background: rgba(255, 107, 157, 0.1);
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            color: #ff6b9d;
             padding: 10px 15px;
-            margin: 5px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -128,8 +166,8 @@
         }
         
         .control-btn:hover {
-            background: rgba(0, 255, 255, 0.2);
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            background: rgba(255, 107, 157, 0.2);
+            box-shadow: 0 0 15px rgba(255, 107, 157, 0.3);
         }
     </style>
 </head>
@@ -154,11 +192,18 @@
         </div>
     </div>
     
+    <div id="navigation">
+        <button class="nav-btn" onclick="lookAtSection('center')">🏠 Center</button>
+        <button class="nav-btn" onclick="lookAtSection('desk')">💻 Desk</button>
+        <button class="nav-btn" onclick="lookAtSection('projects')">🖼️ Projects</button>
+        <button class="nav-btn" onclick="lookAtSection('skills')">🏆 Skills</button>
+        <button class="nav-btn" onclick="lookAtSection('books')">📚 Books</button>
+        <button class="nav-btn" onclick="lookAtSection('ai')">🧠 AI Brain</button>
+    </div>
+    
     <div id="controls">
-        <button class="control-btn" onclick="resetCamera()">🎯 Reset View</button>
         <button class="control-btn" onclick="toggleAnimation()">⏯️ Animation</button>
         <button class="control-btn" onclick="switchTheme()">🎨 Theme</button>
-        <button class="control-btn" onclick="focusGallery()">🖼️ Gallery</button>
         <button class="control-btn" onclick="resetInfoCards()">✨ Reset Cards</button>
     </div>
     

@@ -47,10 +47,10 @@ function init() {
     scene = new THREE.Scene();
     scene.fog = new THREE.Fog(0x0a0a0a, 10, 100);
     
-    // Create camera with better positioning
-    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(4, 3, 8);
-    camera.lookAt(0, 2, 0);
+    // Create camera - positioned inside the room
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 2, 0); // Standing in the center of the room
+    camera.lookAt(0, 2, -5); // Looking forward
     
     // Create renderer with better settings
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -64,8 +64,8 @@ function init() {
     
     document.getElementById('canvas-container').appendChild(renderer.domElement);
     
-    // Add orbit controls
-    addOrbitControls();
+    // Add fixed camera controls (no free movement)
+    addFixedControls();
     
     // Create the workspace
     createRoom();
@@ -105,101 +105,78 @@ function simulateLoading() {
     }, 200);
 }
 
-function addOrbitControls() {
-    // Improved mouse controls with better sensitivity and limits
-    let isMouseDown = false;
-    let mouseX = 0, mouseY = 0;
+function addFixedControls() {
+    // Fixed camera position - only smooth rotation between preset views
+    let currentView = 'center';
+    let targetRotationY = 0;
+    let currentRotationY = 0;
     
-    renderer.domElement.addEventListener('mousedown', (event) => {
-        isMouseDown = true;
-        mouseX = event.clientX;
-        mouseY = event.clientY;
-        renderer.domElement.style.cursor = 'grabbing';
-    });
-    
-    renderer.domElement.addEventListener('mousemove', (event) => {
-        if (isMouseDown) {
-            const deltaX = event.clientX - mouseX;
-            const deltaY = event.clientY - mouseY;
-            
-            targetRotationY += deltaX * 0.005; // Reduced sensitivity
-            targetRotationX += deltaY * 0.005;
-            
-            // Limit vertical rotation
-            targetRotationX = Math.max(-Math.PI/3, Math.min(Math.PI/3, targetRotationX));
-            
-            mouseX = event.clientX;
-            mouseY = event.clientY;
-        }
-    });
-    
-    renderer.domElement.addEventListener('mouseup', () => {
-        isMouseDown = false;
-        renderer.domElement.style.cursor = 'grab';
-    });
-    
-    renderer.domElement.addEventListener('wheel', (event) => {
-        event.preventDefault();
-        const zoomSpeed = 0.1;
-        const delta = event.deltaY > 0 ? 1 + zoomSpeed : 1 - zoomSpeed;
-        
-        currentDistance *= delta;
-        // Limit zoom distance
-        currentDistance = Math.max(3, Math.min(15, currentDistance));
-    });
-    
-    // Set initial cursor
-    renderer.domElement.style.cursor = 'grab';
-    
-    // Update camera rotation
+    // Smooth camera rotation update
     function updateCamera() {
-        rotationX += (targetRotationX - rotationX) * 0.15; // Smoother interpolation
-        rotationY += (targetRotationY - rotationY) * 0.15;
+        currentRotationY += (targetRotationY - currentRotationY) * 0.05;
         
-        camera.position.x = currentDistance * Math.sin(rotationY) * Math.cos(rotationX);
-        camera.position.y = currentDistance * Math.sin(rotationX) + 2; // Offset to look at desk level
-        camera.position.z = currentDistance * Math.cos(rotationY) * Math.cos(rotationX);
-        camera.lookAt(0, 2, 0);
+        // Camera stays at center but rotates to look around
+        const lookX = Math.sin(currentRotationY) * 8;
+        const lookZ = Math.cos(currentRotationY) * 8 - 5;
+        camera.lookAt(lookX, 2, lookZ);
         
         requestAnimationFrame(updateCamera);
     }
     updateCamera();
+    
+    // Store reference for navigation functions
+    window.cameraRotation = {
+        setTarget: (angle) => {
+            targetRotationY = angle;
+        }
+    };
 }
 
 function createRoom() {
     // Floor
-    const floorGeometry = new THREE.PlaneGeometry(30, 30);
+    const floorGeometry = new THREE.PlaneGeometry(20, 20);
     const floorMaterial = new THREE.MeshStandardMaterial({
         color: 0x1a1a2e,
-        metalness: 0.8,
-        roughness: 0.2
+        metalness: 0.6,
+        roughness: 0.4
     });
     const floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     scene.add(floor);
     
-    // Walls
-    const wallGeometry = new THREE.PlaneGeometry(30, 15);
+    // Ceiling
+    const ceiling = new THREE.Mesh(floorGeometry, floorMaterial);
+    ceiling.rotation.x = Math.PI / 2;
+    ceiling.position.y = 8;
+    scene.add(ceiling);
+    
+    // Walls - creating a closed room
+    const wallGeometry = new THREE.PlaneGeometry(20, 8);
     const wallMaterial = new THREE.MeshStandardMaterial({
         color: 0x0f0f23,
-        transparent: true,
-        opacity: 0.8
+        roughness: 0.7
     });
     
-    // Back wall
+    // Front wall (behind camera)
+    const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
+    frontWall.position.set(0, 4, 10);
+    scene.add(frontWall);
+    
+    // Back wall (main focus)
     const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
-    backWall.position.set(0, 7.5, -15);
+    backWall.position.set(0, 4, -10);
     scene.add(backWall);
     
-    // Side walls
+    // Left wall
     const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
-    leftWall.position.set(-15, 7.5, 0);
+    leftWall.position.set(-10, 4, 0);
     leftWall.rotation.y = Math.PI / 2;
     scene.add(leftWall);
     
+    // Right wall
     const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
-    rightWall.position.set(15, 7.5, 0);
+    rightWall.position.set(10, 4, 0);
     rightWall.rotation.y = -Math.PI / 2;
     scene.add(rightWall);
 }
@@ -213,7 +190,7 @@ function createDesk() {
         roughness: 0.3
     });
     desk = new THREE.Mesh(deskGeometry, deskMaterial);
-    desk.position.set(0, 1.5, 0);
+    desk.position.set(0, 1.5, -3); // Move desk forward for better view
     desk.castShadow = true;
     scene.add(desk);
     
@@ -234,7 +211,7 @@ function createDesk() {
     
     positions.forEach(pos => {
         const leg = new THREE.Mesh(legGeometry, legMaterial);
-        leg.position.set(...pos);
+        leg.position.set(pos[0], pos[1], pos[2] - 3); // Adjust for desk position
         leg.castShadow = true;
         scene.add(leg);
     });
@@ -253,9 +230,9 @@ function createDesk() {
 
 function createHolographicScreens() {
     const screenData = [
-        { pos: [-2, 3, -1], content: 'code', title: 'NestJS API' },
-        { pos: [2, 3.5, -0.5], content: 'terminal', title: 'Docker & Git' },
-        { pos: [0, 4, -2], content: 'dashboard', title: 'System Monitor' }
+        { pos: [-3, 3, -6], content: 'code', title: 'NestJS API' },
+        { pos: [3, 3, -6], content: 'terminal', title: 'Docker & Git' },
+        { pos: [0, 3.5, -7], content: 'dashboard', title: 'System Monitor' }
     ];
     
     screenData.forEach((data, index) => {
@@ -419,7 +396,7 @@ function createBookshelf() {
     });
     
     const shelf = new THREE.Mesh(shelfGeometry, shelfMaterial);
-    shelf.position.set(-6, 3, -2);
+    shelf.position.set(-8, 3, -2);
     shelf.castShadow = true;
     scene.add(shelf);
     
@@ -436,7 +413,7 @@ function createBookshelf() {
         });
         
         const book = new THREE.Mesh(bookGeometry, bookMaterial);
-        book.position.set(-5.8, 1 + index * 1.2, -2 + (index % 2) * 0.5);
+        book.position.set(-7.8, 1 + index * 1.2, -2 + (index % 2) * 0.5);
         book.rotation.y = (Math.random() - 0.5) * 0.2;
         book.castShadow = true;
         scene.add(book);
@@ -463,7 +440,7 @@ function createTrophyShelf() {
     });
     
     const trophyShelf = new THREE.Mesh(shelfGeometry, shelfMaterial);
-    trophyShelf.position.set(3, 4, -4);
+    trophyShelf.position.set(8, 4, -2);
     trophyShelf.castShadow = true;
     scene.add(trophyShelf);
     
@@ -598,7 +575,7 @@ function createAIJar() {
     jarGroup.add(brainMesh);
     jarGroup.add(lid);
     jarGroup.add(label);
-    jarGroup.position.set(2, 2.5, 1);
+    jarGroup.position.set(4, 2.5, -1);
     
     scene.add(jarGroup);
     aiJar = jarGroup;
@@ -632,8 +609,8 @@ function createProjectGallery() {
         roughness: 0.7
     });
     const galleryWall = new THREE.Mesh(galleryWallGeometry, galleryWallMaterial);
-    galleryWall.position.set(-10, 4, -8);
-    galleryWall.rotation.y = Math.PI / 6;
+    galleryWall.position.set(-9, 4, -5);
+    galleryWall.rotation.y = Math.PI / 4;
     scene.add(galleryWall);
     
     // Create project frames
@@ -776,67 +753,67 @@ function createProjectImageCanvas(project) {
 }
 
 function createFloatingInfoCards() {
-    // Khentit Safouane Amine's Personal Information
+    // Khentit Safouane Amine's Personal Information - Positioned around the room
     const personalInfo = [
         { 
             title: "👨‍💻 Khentit Safouane Amine", 
-            content: "20-year-old Full Stack Developer studying at Higher National School of Computer Science, Sidi-Bel-Abbès",
+            content: "20-year-old Full Stack Developer\nHigher National School of CS\nSidi-Bel-Abbès",
             color: "#00ffff",
             startPos: [-15, 8, 5],
-            endPos: [-8, 6, 3]
+            endPos: [-6, 5, 2]
         },
         { 
             title: "🏗️ Systems Design Expert", 
-            content: "Specialized in scalable backend architectures with microservices and real-time communication",
+            content: "Scalable backend architectures\nMicroservices & real-time communication\nNestJS & Express.js specialist",
             color: "#ff6b9d",
             startPos: [15, 9, 4],
-            endPos: [8, 5, 2]
+            endPos: [6, 5, 2]
         },
         { 
             title: "🤖 AI Integration Specialist", 
-            content: "Experienced in integrating AI solutions and building intelligent automation systems",
+            content: "AI solutions & automation systems\nIntelligent data processing\nMachine learning integration",
             color: "#45b7d1",
             startPos: [-12, 12, -8],
-            endPos: [-6, 7, -5]
+            endPos: [-6, 5, -8]
         },
         { 
             title: "🕷️ Web Scraping Master", 
-            content: "Expert in Puppeteer and BrightData for extracting and processing web data at scale",
+            content: "Puppeteer & BrightData expert\nLarge-scale data extraction\nJobScout platform creator",
             color: "#f39c12",
             startPos: [18, 6, -6],
-            endPos: [10, 4, -3]
+            endPos: [6, 5, -8]
         },
         { 
             title: "📱 Full Stack Mobile Dev", 
-            content: "Building cross-platform solutions with Kotlin Jetpack Compose and modern web technologies",
+            content: "Kotlin Jetpack Compose\nCross-platform solutions\nModern web technologies",
             color: "#9b59b6",
             startPos: [-20, 15, 2],
-            endPos: [-12, 8, 1]
+            endPos: [0, 6, 8]
         }
     ];
     
     personalInfo.forEach((info, index) => {
         const cardGroup = new THREE.Group();
         
-        // Card background
-        const cardGeometry = new THREE.PlaneGeometry(3, 1.5);
+        // Card background - Much larger and more readable
+        const cardGeometry = new THREE.PlaneGeometry(4, 2.5);
         const cardCanvas = createInfoCardCanvas(info);
         const cardTexture = new THREE.CanvasTexture(cardCanvas);
         const cardMaterial = new THREE.MeshStandardMaterial({
             map: cardTexture,
             transparent: true,
-            opacity: 0.9,
+            opacity: 0.95,
             emissive: new THREE.Color(info.color),
-            emissiveIntensity: 0.1
+            emissiveIntensity: 0.15
         });
         const card = new THREE.Mesh(cardGeometry, cardMaterial);
         
         // Glowing border
-        const borderGeometry = new THREE.PlaneGeometry(3.2, 1.7);
+        const borderGeometry = new THREE.PlaneGeometry(4.2, 2.7);
         const borderMaterial = new THREE.MeshBasicMaterial({
             color: new THREE.Color(info.color),
             transparent: true,
-            opacity: 0.3,
+            opacity: 0.4,
             blending: THREE.AdditiveBlending
         });
         const border = new THREE.Mesh(borderGeometry, borderMaterial);
@@ -902,63 +879,52 @@ function createFloatingInfoCards() {
 
 function createInfoCardCanvas(info) {
     const canvas = document.createElement('canvas');
-    canvas.width = 600;
-    canvas.height = 300;
+    canvas.width = 800;
+    canvas.height = 500;
     const ctx = canvas.getContext('2d');
     
     // Background with gradient
-    const gradient = ctx.createLinearGradient(0, 0, 600, 300);
-    gradient.addColorStop(0, 'rgba(26, 26, 46, 0.9)');
-    gradient.addColorStop(0.5, info.color + '40');
-    gradient.addColorStop(1, 'rgba(15, 15, 35, 0.9)');
+    const gradient = ctx.createLinearGradient(0, 0, 800, 500);
+    gradient.addColorStop(0, 'rgba(26, 26, 46, 0.95)');
+    gradient.addColorStop(0.5, info.color + '30');
+    gradient.addColorStop(1, 'rgba(15, 15, 35, 0.95)');
     
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 600, 300);
+    ctx.fillRect(0, 0, 800, 500);
     
     // Border
     ctx.strokeStyle = info.color;
-    ctx.lineWidth = 3;
-    ctx.strokeRect(10, 10, 580, 280);
+    ctx.lineWidth = 4;
+    ctx.strokeRect(15, 15, 770, 470);
     
     // Title
     ctx.fillStyle = info.color;
-    ctx.font = 'bold 32px Arial';
+    ctx.font = 'bold 42px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(info.title, 300, 80);
+    ctx.fillText(info.title, 400, 100);
     
-    // Content
+    // Content - Handle line breaks properly
     ctx.fillStyle = '#ffffff';
-    ctx.font = '20px Arial';
+    ctx.font = 'bold 28px Arial';
     
-    // Word wrap for content
-    const words = info.content.split(' ');
-    let line = '';
-    let y = 140;
+    const lines = info.content.split('\n');
+    let y = 180;
     
-    words.forEach(word => {
-        const testLine = line + word + ' ';
-        const metrics = ctx.measureText(testLine);
-        
-        if (metrics.width > 500 && line !== '') {
-            ctx.fillText(line, 300, y);
-            line = word + ' ';
-            y += 30;
-        } else {
-            line = testLine;
-        }
+    lines.forEach(line => {
+        ctx.fillText(line.trim(), 400, y);
+        y += 40;
     });
-    ctx.fillText(line, 300, y);
     
-    // Decorative corner elements
+    // Decorative corner elements - larger
     ctx.fillStyle = info.color;
-    ctx.fillRect(10, 10, 40, 4);
-    ctx.fillRect(10, 10, 4, 40);
-    ctx.fillRect(550, 10, 40, 4);
-    ctx.fillRect(586, 10, 4, 40);
-    ctx.fillRect(10, 286, 40, 4);
-    ctx.fillRect(10, 246, 4, 40);
-    ctx.fillRect(550, 286, 40, 4);
-    ctx.fillRect(586, 246, 4, 40);
+    ctx.fillRect(15, 15, 60, 6);
+    ctx.fillRect(15, 15, 6, 60);
+    ctx.fillRect(725, 15, 60, 6);
+    ctx.fillRect(779, 15, 6, 60);
+    ctx.fillRect(15, 479, 60, 6);
+    ctx.fillRect(15, 419, 6, 60);
+    ctx.fillRect(725, 479, 60, 6);
+    ctx.fillRect(779, 419, 6, 60);
     
     return canvas;
 }
@@ -1089,23 +1055,42 @@ function animate() {
 
 // Global functions for UI controls (only run in browser)
 if (typeof window !== 'undefined') {
-    window.resetCamera = function() {
-        // Reset rotation values
-        targetRotationX = 0;
-        targetRotationY = 0;
-        currentDistance = 8;
+    let currentSection = 'center';
+    
+    window.lookAtSection = function(section) {
+        // Remove active class from all buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         
-        gsap.to(camera.position, {
-            x: 4,
-            y: 3,
-            z: 8,
-            duration: 1.5,
-            ease: "power2.inOut"
-        });
-        gsap.to(camera, {
-            onUpdate: () => camera.lookAt(0, 2, 0),
-            duration: 1.5
-        });
+        // Add active class to clicked button
+        event.target.classList.add('active');
+        
+        currentSection = section;
+        let targetAngle = 0;
+        
+        switch(section) {
+            case 'center':
+                targetAngle = 0; // Looking forward at screens
+                break;
+            case 'desk':
+                targetAngle = Math.PI * 0.1; // Slightly down at desk
+                break;
+            case 'projects':
+                targetAngle = -Math.PI * 0.6; // Left wall gallery
+                break;
+            case 'skills':
+                targetAngle = Math.PI * 0.6; // Right wall trophies
+                break;
+            case 'books':
+                targetAngle = -Math.PI * 0.8; // Left corner books
+                break;
+            case 'ai':
+                targetAngle = Math.PI * 0.3; // Right side AI jar
+                break;
+        }
+        
+        if (window.cameraRotation) {
+            window.cameraRotation.setTarget(targetAngle);
+        }
     };
 
     window.toggleAnimation = function() {
@@ -1126,45 +1111,22 @@ if (typeof window !== 'undefined') {
         }
     };
 
-    window.focusGallery = function() {
-        // Reset camera controls for gallery view
-        targetRotationX = 0.1;
-        targetRotationY = -0.3;
-        currentDistance = 6;
-        
-        gsap.to(camera.position, {
-            x: -6,
-            y: 4,
-            z: -2,
-            duration: 2,
-            ease: "power2.inOut"
-        });
-        gsap.to(camera, {
-            onUpdate: () => camera.lookAt(-10, 4, -8),
-            duration: 2
-        });
-        
-        // Make gallery glow more prominently
-        projectGallery.forEach((frame, index) => {
-            gsap.to(frame.children[2].material, {
-                opacity: 0.6,
-                duration: 1,
-                delay: index * 0.1,
-                ease: "power2.out"
-            });
-        });
-    };
+    // Initialize with center view active
+    window.addEventListener('load', () => {
+        const centerBtn = document.querySelector('.nav-btn[onclick*="center"]');
+        if (centerBtn) centerBtn.classList.add('active');
+    });
 
     window.resetInfoCards = function() {
         // Re-trigger the flying animation for info cards
         infoCards.forEach((card, index) => {
-            const info = [
-                { startPos: [-15, 8, 5], endPos: [-8, 6, 3] },
-                { startPos: [15, 9, 4], endPos: [8, 5, 2] },
-                { startPos: [-12, 12, -8], endPos: [-6, 7, -5] },
-                { startPos: [18, 6, -6], endPos: [10, 4, -3] },
-                { startPos: [-20, 15, 2], endPos: [-12, 8, 1] }
-            ][index];
+                    const info = [
+            { startPos: [-15, 8, 5], endPos: [-6, 5, 2] },
+            { startPos: [15, 9, 4], endPos: [6, 5, 2] },
+            { startPos: [-12, 12, -8], endPos: [-6, 5, -8] },
+            { startPos: [18, 6, -6], endPos: [6, 5, -8] },
+            { startPos: [-20, 15, 2], endPos: [0, 6, 8] }
+        ][index];
             
             // Reset to flying position
             gsap.set(card.position, {
