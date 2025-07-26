@@ -1171,12 +1171,14 @@ if (typeof window !== 'undefined') {
 
 
 
-// Handle window resize
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// Initialize the application
-init();
+// Handle window resize (only in browser)
+if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    
+    // Initialize the application
+    init();
+}
