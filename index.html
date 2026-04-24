@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Virtual Workspace - Developer Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            overflow: hidden;
+            color: white;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            margin: 0;
+            padding: 0;
+        }
+        
+        #canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        
+        #loading h2 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .loading-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        #ui-overlay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .info-panel {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            margin-bottom: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .info-panel h3 {
+            color: #00ffff;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .info-panel p {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+        }
+        
+        #navigation {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            background: rgba(0, 255, 255, 0.15);
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            color: #00ffff;
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(15px);
+            font-size: 16px;
+            font-weight: bold;
+            min-width: 140px;
+            text-align: center;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+        
+        .nav-btn.active {
+            background: rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+        }
+        
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            background: rgba(255, 107, 157, 0.1);
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            color: #ff6b9d;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 107, 157, 0.2);
+            box-shadow: 0 0 15px rgba(255, 107, 157, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <h2>Initializing Virtual Workspace...</h2>
+        <div class="loading-bar">
+            <div class="loading-progress" id="progress"></div>
+        </div>
+    </div>
+    
+    <div id="canvas-container"></div>
+    
+    <div id="ui-overlay">
+        <div class="info-panel">
+            <h3>🚀 Developer Workspace</h3>
+            <p>Navigate: Mouse + Drag<br>Zoom: Scroll Wheel<br>Explore the holographic environment</p>
+        </div>
+        <div class="info-panel">
+            <h3>🖼️ Project Gallery</h3>
+            <p>Filtered project showcase<br>Color-matched to workspace theme<br>Floating personal info cards</p>
+        </div>
+    </div>
+    
+    <div id="navigation">
+        <button class="nav-btn" onclick="lookAtSection('center')">🏠 Center</button>
+        <button class="nav-btn" onclick="lookAtSection('desk')">💻 Desk</button>
+        <button class="nav-btn" onclick="lookAtSection('projects')">🖼️ Projects</button>
+        <button class="nav-btn" onclick="lookAtSection('skills')">🏆 Skills</button>
+        <button class="nav-btn" onclick="lookAtSection('books')">📚 Books</button>
+        <button class="nav-btn" onclick="lookAtSection('ai')">🧠 AI Brain</button>
+    </div>
+    
+    <div id="controls">
+        <button class="control-btn" onclick="toggleAnimation()">⏯️ Animation</button>
+        <button class="control-btn" onclick="switchTheme()">🎨 Theme</button>
+        <button class="control-btn" onclick="resetInfoCards()">✨ Reset Cards</button>
+    </div>
+    
+    <script type="module" src="./main.js"></script>
+</body>
+</html>
